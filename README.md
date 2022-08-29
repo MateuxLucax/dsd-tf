@@ -17,7 +17,7 @@ Sistema de comunicação de mensagens entre dispositivos. A sincronização entr
 - RF1: O sistema deverá manter usuário.
 - RF2: O sistema deverá manter mensagens.
 - RF3: O sistema deverá manter amizades.
-- RF4: O sistema deverá permitir comunicação através de mensagens com entre usuários. 
+- RF4: O sistema deverá permitir comunicação entre usuários através de mensagens . 
 
 ### Específicação preliminar das mensagens
 
@@ -59,3 +59,10 @@ Campos:
 - Usuário atual
 Descrição: Lista todos os amigos do usuário atual.
 Retorno: Lista JSON, com dados dos usuários amigos. No formato: `[{"user": 1, "name": "robinson"}]`
+
+#### Listar todas as mensagens entre dois amigos
+Campos: 
+- Usuário atual
+- Usuário amigo
+Descrição: Lista todas as mensagens trocadas entre dois amigos.
+Retorno: Lista JSON, com dados das mensages. No formato: `[{"message": "test", "sent_at": "2022-01-01T00:12:00.000Z"}]`
