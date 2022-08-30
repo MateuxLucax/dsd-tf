@@ -6,7 +6,7 @@
 - Lucas Moraes Schwambach
 - Mateus Lucas Cruz Brandt
 
-## Sistema à ser desenvolvido
+## Sistema a ser desenvolvido
 
 ### Descrição geral
 
