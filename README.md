@@ -16,8 +16,9 @@ Sistema de comunicação de mensagens entre dispositivos. A sincronização entr
 
 - RF1: O sistema deverá manter usuário.
 - RF2: O sistema deverá manter mensagens.
-- RF3: O sistema deverá manter amizades.
-- RF4: O sistema deverá permitir comunicação entre usuários através de mensagens . 
+- RF3: O sistema deverá manter pedidos de amizade.
+- RF4: O sistema deverá manter amizades.
+- RF5: O sistema deverá permitir comunicação entre usuários através de mensagens. 
 
 ### Específicação preliminar das mensagens
 
@@ -41,14 +42,27 @@ Campos:
 Descrição: Novo usuário cadastrado no sistema.
 Retorno: Sucesso ou falha
 
-#### Adicionar amigo
+#### Pedir usuário em amizade
 Campos:
 - Usuário atual
-- Usuário amigo
-Descrição: Relaciona usuário atual, e usuário amigo.
+- Usuário desejado
+Descrição: Envia um pedido de amizade ao usuário desejado
 Retorno: Sucesso ou falha
 
-### Listar usuários disponíveis para amizade
+#### Aceitar/rejeitar pedido de amizade
+Campos:
+- Usuário atual
+- Usuário que fez o pedido
+- Aceite/rejeição
+Descrição: Mensagem enviada quando o usuário que recebeu um pedido de amizade aceita ou rejeita ele
+Retorno: Sucesso ou falha
+
+#### Listar pedidos de amizade
+Campos:
+- Usuário atual
+Descrição: Lista os pedidos de amizade que o usuário recebeu mas ainda não aceitou
+
+#### Listar usuários disponíveis para amizade
 Campos:
 - Usuário atual
 Descrição: Lista contendo todos os usuários que não são amigos do usuário atual.
