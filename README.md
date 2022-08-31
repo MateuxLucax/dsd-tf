@@ -19,6 +19,7 @@ Sistema de comunicação de mensagens entre dispositivos (Chat). A sincronizaç�
 - RF3: O sistema deverá manter pedidos de amizade.
 - RF4: O sistema deverá manter amizades.
 - RF5: O sistema deverá permitir comunicação entre usuários através de mensagens.
+- RF6: O sistemá deverá permitir o envio de mensagens multimidia.
 
 ## Específicação preliminar das mensagens
 
