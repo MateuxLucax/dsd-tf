@@ -8,11 +8,11 @@
 
 ## Sistema a ser desenvolvido
 
-### Descrição geral
+## Descrição geral
 
 Sistema de comunicação de mensagens entre dispositivos. A sincronização entre os usuários será feita utilizando Sockets ociosos, que serão responsáveis por trafegar as mensagens. Além disso, as mensagens enviadas serão persistidas. Usuários necessitaram apenas de nome de usuário e senha, podendo adicionar outros usuários para conversa através do nome  com todo o controle de comunicação sendo realizado por um servidor.
 
-### Requisitos funcionais
+## Requisitos funcionais
 
 - RF1: O sistema deverá manter usuários.
 - RF2: O sistema deverá manter mensagens.
@@ -20,7 +20,7 @@ Sistema de comunicação de mensagens entre dispositivos. A sincronização entr
 - RF4: O sistema deverá manter amizades.
 - RF5: O sistema deverá permitir comunicação entre usuários através de mensagens.
 
-### Específicação preliminar das mensagens
+## Específicação preliminar das mensagens
 
 #### Mensagem enviada para outro usuário
 Campos:
@@ -82,29 +82,35 @@ Campos:
 
 Descrição: Lista os pedidos de amizade que o usuário recebeu mas ainda não aceitou ou rejeitou
 
-#### Listar usuários disponíveis para amizade
-Campos:
-- Usuário atual
+### Listar usuários disponíveis para amizade
 
-Descrição: Lista contendo todos os usuários que não são amigos do usuário atual.
+| Campos | Conteúdo |
+| --- | --- |
+| `user` | Usuário atual |
 
-Retorno: Lista JSON, com dados dos usuários para adição. No formato: `[{"user": 1, "name": "robinson"}]`
+**Descrição**: Lista contendo todos os usuários que não são amigos do usuário atual.
 
-#### Lista de amigos
-Campos:
-- Usuário atual
+**Retorno**: Lista JSON, com dados dos usuários para adição. No formato: `[{"user": 1, "name": "robinson"}]`
 
-Descrição: Lista todos os amigos do usuário atual.
+### Lista de amigos
 
-Retorno: Lista JSON, com dados dos usuários amigos. No formato: `[{"user": 1, "name": "robinson"}]`
+| Campos | Conteúdo |
+| --- | --- |
+| `user` | Usuário atual |
 
-#### Listar as últimas N mensagens entre dois amigos
-Campos: 
-- Usuário atual
-- Usuário amigo
-- ID de uma mensagem (opcional)
-- N: número de mensagens a carregar (opcional, por padrão 20).
+**Descrição**: Lista todos os amigos do usuário atual.
+**Retorno**: Lista JSON, com dados dos usuários amigos. No formato: `[{"user": 1, "name": "robinson"}]`
 
-Descrição: Lista das N mensagens anteriores à mensagem de ID dado. Se nenhuma mensagem for dada, pega as últimas N mensagens trocadas.
 
-Retorno: Lista JSON, com dados das mensages. No formato: `[{"message": "test", "sent_at": "2022-01-01T00:12:00.000Z"}]`
+### Listar as últimas N mensagens entre dois amigos
+
+| Campos | Conteúdo |
+| --- | --- |
+| `user` | Usuário atual |
+| `friend` | Usuário amigo |
+| `offset` | ID da mensagem (opcional) |
+| `limit` | Número de mensagens a carregar |
+
+**Descrição**: Lista das N mensagens anteriores à mensagem de ID dado. Se nenhuma mensagem for dada, pega as últimas N mensagens trocadas.
+
+**Retorno**: Lista JSON, com dados das mensages. No formato: `[{"message": "test", "sent_at": "2022-01-01T00:12:00.000Z"}]`
