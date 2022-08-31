@@ -103,6 +103,8 @@ Descrição: Lista os pedidos de amizade que o usuário recebeu mas ainda não a
 
 
 ### Listar as últimas N mensagens entre dois amigos
+---
+Lista das N mensagens anteriores à mensagem de ID dado. Se nenhuma mensagem for dada, pega as últimas N mensagens trocadas.
 
 | Campos | Conteúdo |
 | --- | --- |
@@ -111,6 +113,9 @@ Descrição: Lista os pedidos de amizade que o usuário recebeu mas ainda não a
 | `offset` | ID da mensagem (opcional) |
 | `limit` | Número de mensagens a carregar |
 
-**Descrição**: Lista das N mensagens anteriores à mensagem de ID dado. Se nenhuma mensagem for dada, pega as últimas N mensagens trocadas.
-
-**Retorno**: Lista JSON, com dados das mensages. No formato: `[{"message": "test", "sent_at": "2022-01-01T00:12:00.000Z"}]`
+**Retorno**
+| Condição | Resposta |
+| --- | --- |
+| Sucesso | `[{"message": "test", "sent_at": "2022-01-01T00:12:00.000Z"}]` |
+| Nenhuma mensagem | `[]` |
+| Erro | `{"error":"couldn\" retrieve messages due to ..."}` |
