@@ -24,65 +24,115 @@ Sistema de comunicação de mensagens entre dispositivos. A sincronização entr
 
 Todas as requisições e respostas são do tipo [JSON](https://www.json.org/json-en.html).
 
-#### Mensagem enviada para outro usuário
-Campos:
-- Conteúdo da mensagem. 
-- Usuário de destino.
-Descrição: Mensagem enviada de um amigo, para outro
-Retorno: Sucesso ou falha
+#### Enviar mensagem para outro usuário
+---
+Usuário envia mensagem para amigo.
 
-#### Mensagem recebida de outro usuário
-Campos:
-- Nenhum
-Descrição: Mensagem recebida de um amigo.
+#### Requisição
+| Campos | Conteúdo |
+| --- | --- |
+| `user` | Usuário atual |
+| `friend` | Amigo |
+| `message` | Mensagem |
 
-Retorno: Um JSON com os dados da mensagem e usuário que enviou. No formato: `{"message": "test", "user": 1}`
+#### Retorno
+| Condição | Resposta |
+| --- | --- |
+| Sucesso | `[{"message": "message sent"}]` |
+| Erro | `{"error":"couldn\"t send message to friend due to ..."}` |
 
-#### Cadastro de usuário
-Campos: 
-- Nome de usuário.
-- Senha. 
-Descrição: Novo usuário cadastrado no sistema.
+### Mensagem recebida de outro usuário
+---
+Mensagem recebida de um amigo.
 
-Retorno: Sucesso ou falha
+#### Retorno
+| Condição | Resposta |
+| --- | --- |
+| Mensagem | `[{"friend": {"user": 1, "name": "robinson"}, "message": "hello work!"}]` |
 
-#### Pedir usuário em amizade
-Campos:
-- Usuário atual
-- Usuário desejado
+### Cadastro de usuário
+---
+Cadastrar usuário no sistema.
 
-Descrição: Envia um pedido de amizade ao usuário desejado.
+#### Requisição
+| Campos | Conteúdo |
+| --- | --- |
+| `username` | Nome de usuário |
+| `password` | Senha |
 
-Retorno: Sucesso ou falha
+#### Retorno
+| Condição | Resposta |
+| --- | --- |
+| Sucesso | `[{"message": "user created"}]` |
+| Erro | `{"error":"couldn\"t create user due to ..."}` |
 
-#### Pedido de amizade recebido
-Campos:
-- Usuário que enviou o pedido
+### Pedir usuário em amizade
+---
+Envia um pedido de amizade ao usuário desejado.
 
+#### Requisição
+| Campos | Conteúdo |
+| --- | --- |
+| `user` | Usuário atual |
+| `friend` | Usuário desejado |
+
+#### Retorno
+| Condição | Resposta |
+| --- | --- |
+| Sucesso | `[{"message": "invite sent"}]` |
+| Erro | `{"error":"couldn\"t invite due to ..."}` |
+
+### Pedido de amizade recebido
+---
 Descrição: Servidor notifica usuário quando recebe um pedido de amizade
 
-#### Aceitar/rejeitar pedido de amizade
-Campos:
-- Usuário atual
-- Usuário que fez o pedido
-- Aceite/rejeição
+#### Retorno
+| Condição | Resposta |
+| --- | --- |
+| Usuário que enviou o pedido | `[{"user": 1, "name": "robinson"}]` |
 
-Descrição: Servidor notifica usuário quando recebe um pedido de amizade.
+### Aceitar/rejeitar pedido de amizade
+---
+Aceita ou rejeita pedido de amizade.
 
-Retorno: Sucesso ou falha
+#### Requisição
+| Campos | Conteúdo |
+| --- | --- |
+| `user` | Usuário atual |
+| `friend` | Usuário que fez o pedido |
+| `status` | Aceite/rejeição |
 
-#### Pedido de amizade aceitado/rejeitado
-Campos:
-- Usuário que aceitou/rejeitou o pedido
-- Status (pedido aceitado ou rejeitado)
+#### Retorno
+| Condição | Resposta |
+| --- | --- |
+| Sucesso | `[{"message": "invite accepted"}]` |
+| Erro | `{"error":"couldn\"t accept invite due to ..."}` |
 
-Descrição: Servidor notifica usuário quando um pedido de amizade feito foi aceitado ou rejeitado.
+### Pedido de amizade aceitado/rejeitado
+---
+Servidor notifica usuário quando um pedido de amizade feito foi aceitado ou rejeitado.
 
-#### Listar pedidos de amizade
-Campos:
-- Usuário atual
+#### Retorno
+| Condição | Resposta |
+| --- | --- |
+| Usuário | `[{"user": 1, "name": "robinson"}]` |
+| Status | `{"status":"accepted"}` |
 
-Descrição: Lista os pedidos de amizade que o usuário recebeu mas ainda não aceitou ou rejeitou
+### Listar pedidos de amizade
+---
+Lista os pedidos de amizade que o usuário recebeu mas ainda não aceitou ou rejeitou
+
+#### Requisição
+| Campos | Conteúdo |
+| --- | --- |
+| `user` | Usuário atual |
+
+#### Retorno
+| Condição | Resposta |
+| --- | --- |
+| Sucesso | `[{"user": 1, "name": "robinson"}]` |
+| Nenhum usuário disponível | `[]` |
+| Erro | `{"error":"couldn\" retrieve friendship invites due to ..."}` |
 
 ### Listar usuários disponíveis para amizade
 ---
@@ -100,7 +150,7 @@ Lista contendo todos os usuários que não são amigos do usuário atual.
 | Nenhum usuário disponível | `[]` |
 | Erro | `{"error":"couldn\" retrieve users due to ..."}` |
 
-### Lista de amigos
+### Listar os amigos
 ---
 Lista todos os amigos do usuário atual.
 
