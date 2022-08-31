@@ -22,6 +22,8 @@ Sistema de comunicação de mensagens entre dispositivos. A sincronização entr
 
 ## Específicação preliminar das mensagens
 
+Todas as requisições e respostas são do tipo [JSON](https://www.json.org/json-en.html).
+
 #### Mensagem enviada para outro usuário
 Campos:
 - Conteúdo da mensagem. 
@@ -83,37 +85,51 @@ Campos:
 Descrição: Lista os pedidos de amizade que o usuário recebeu mas ainda não aceitou ou rejeitou
 
 ### Listar usuários disponíveis para amizade
+---
+Lista contendo todos os usuários que não são amigos do usuário atual.
 
+#### Requisição
 | Campos | Conteúdo |
 | --- | --- |
 | `user` | Usuário atual |
 
-**Descrição**: Lista contendo todos os usuários que não são amigos do usuário atual.
-
-**Retorno**: Lista JSON, com dados dos usuários para adição. No formato: `[{"user": 1, "name": "robinson"}]`
+#### Retorno
+| Condição | Resposta |
+| --- | --- |
+| Sucesso | `[{"user": 1, "name": "robinson"}]` |
+| Nenhum usuário disponível | `[]` |
+| Erro | `{"error":"couldn\" retrieve users due to ..."}` |
 
 ### Lista de amigos
+---
+Lista todos os amigos do usuário atual.
 
+#### Requisição
 | Campos | Conteúdo |
 | --- | --- |
 | `user` | Usuário atual |
 
-**Descrição**: Lista todos os amigos do usuário atual.
-**Retorno**: Lista JSON, com dados dos usuários amigos. No formato: `[{"user": 1, "name": "robinson"}]`
+#### Retorno
+| Condição | Resposta |
+| --- | --- |
+| Sucesso | `[{"user": 1, "name": "robinson"}]` |
+| Nenhum amigo | `[]` |
+| Erro | `{"error":"couldn\" retrieve friends due to ..."}` |
 
 
 ### Listar as últimas N mensagens entre dois amigos
 ---
 Lista das N mensagens anteriores à mensagem de ID dado. Se nenhuma mensagem for dada, pega as últimas N mensagens trocadas.
 
+#### Requisição
 | Campos | Conteúdo |
 | --- | --- |
 | `user` | Usuário atual |
 | `friend` | Usuário amigo |
 | `offset` | ID da mensagem (opcional) |
-| `limit` | Número de mensagens a carregar |
+| `limit` | Número de mensagens a carregar (opcional) |
 
-**Retorno**
+#### Retorno
 | Condição | Resposta |
 | --- | --- |
 | Sucesso | `[{"message": "test", "sent_at": "2022-01-01T00:12:00.000Z"}]` |
