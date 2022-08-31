@@ -33,7 +33,8 @@ Usuário envia mensagem para amigo.
 | --- | --- |
 | `user` | Usuário atual |
 | `friend` | Amigo |
-| `message` | Mensagem |
+| `type` | Tipo da mensagem
+| `content` | Conteúdo das mensagens |
 
 #### Retorno
 | Condição | Resposta |
