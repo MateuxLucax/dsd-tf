@@ -25,7 +25,7 @@ Sistema de comunicação de mensagens entre dispositivos (Chat). A sincronizaç�
 
 Todas as requisições e respostas são do tipo [JSON](https://www.json.org/json-en.html).
 
-#### Enviar mensagem para outro usuário
+### Enviar mensagem para outro usuário
 ---
 Usuário envia mensagem para amigo.
 
