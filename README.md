@@ -10,7 +10,7 @@
 
 ## Descrição geral
 
-Sistema de comunicação de mensagens entre dispositivos (Chat). A sincronização entre os usuários será feita utilizando Sockets ociosos, que serão responsáveis por trafegar as mensagens. Além disso, as mensagens enviadas serão persistidas. Usuários necessitaram apenas de nome de usuário e senha, podendo adicionar outros usuários para conversa através do nome  com todo o controle de comunicação sendo realizado por um servidor.
+Sistema de comunicação de mensagens entre dispositivos (Chat). A sincronização entre os usuários será feita utilizando Sockets não ociosos, que serão responsáveis por trafegar as mensagens. Além disso, as mensagens enviadas serão persistidas. Usuários necessitaram apenas de nome de usuário e senha, podendo adicionar outros usuários para conversa através do nome  com todo o controle de comunicação sendo realizado por um servidor.
 
 ## Requisitos funcionais
 
