@@ -6,6 +6,7 @@ drop table if exists users;
 create table users (
         id          integer primary key autoincrement,
         username    text    unique not null,
+        password    text    not null,
         avatar_path text    null,
         created_at  timestamp default current_timestamp not null,
         updated_at  timestamp null,
