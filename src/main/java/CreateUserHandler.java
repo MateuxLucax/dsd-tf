@@ -1,5 +1,6 @@
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,19 +11,27 @@ public class CreateUserHandler extends RequestHandler {
 
     public record ResponseData(long id) {}
 
-    public Object handle(Connection conn, Gson gson, JsonElement jsonRequest) throws SQLException {
+    public boolean needsAuthorization() {
+        return false;
+    }
+
+    public Object handle(Connection conn, Gson gson, JsonObject jsonRequest) throws SQLException {
         var req = gson.fromJson(jsonRequest, RequestData.class);
         try {
             conn.setAutoCommit(false);
 
-            var existsStmt = conn.prepareStatement("SELECT id FROM users WHERE username = ?");
+            var existsStmt = conn.prepareStatement(
+                "SELECT id FROM users WHERE username = ?"
+            );
             existsStmt.setString(1, req.username());
             var alreadyExists = existsStmt.executeQuery().next();
             if (alreadyExists) {
                 throw new Exception("User already exists");
             }
 
-            var createStmt = conn.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)");
+            var createStmt = conn.prepareStatement(
+                "INSERT INTO users (username, password) VALUES (?, ?)"
+            );
             createStmt.setString(1, req.username());
             createStmt.setString(2, req.password());
             var created = createStmt.executeUpdate() > 0;
@@ -35,7 +44,9 @@ public class CreateUserHandler extends RequestHandler {
 
             // I think we can do MAX(id) without worrying about some interleaving concurrent insertion because we're inside a transaction, but I'm not sure
             // if that's not the case just change it to SELECT id FROM users WHERE username = {req.username()}
-            var idStmt = conn.prepareStatement("SELECT MAX(id) AS id FROM users");
+            var idStmt = conn.prepareStatement(
+                "SELECT MAX(id) AS id FROM users"
+            );
             var idResult = idStmt.executeQuery();
             var gotId = idResult.next();
             if (!gotId) {

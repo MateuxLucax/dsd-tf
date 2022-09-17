@@ -1,5 +1,4 @@
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
 
 public class Server {
 
@@ -9,12 +8,35 @@ public class Server {
         gsonb.registerTypeAdapterFactory(new RecordTypeAdapterFactory());
         var gson = gsonb.create();
 
-        var reqString = "{\"operation\": \"CREATE_USER\", \"username\": \"admin\", \"password\": \"123\"}";
-        var req = JsonParser.parseString(reqString);
+        {
+            var reqString = "{\"operation\": \"CREATE_USER\", \"username\": \"admin\", \"password\": \"123\"}";
 
-        var obj = new CreateUserHandler().handle(req);
-        var res = gson.toJson(obj);
+            var obj = new CreateUserHandler().handle(reqString);
+            var res = gson.toJson(obj);
+            System.out.println(res);
+        }
 
-        System.out.println(res);
+        String token = "";
+
+        {
+            var reqString = "{\"operation\": \"CREATE_SESSION\", \"username\": \"admin\", \"password\": \"123\"}";
+            var obj = new CreateSessionHandler().handle(reqString);
+            var res = gson.toJson(obj);
+            System.out.println(res);
+            token = ((CreateSessionHandler.ResponseData) obj).token();
+        }
+
+        {
+            var reqString = String.format("{\"operation\": \"SAY_HELLO\", \"token\": \"%s\"}", token);
+            var res = gson.toJson(new SayHelloHandler().handle(reqString));
+            System.out.println(res);
+        }
+
+        {
+            var reqString = "{\"operation\": \"SAY_HELLO\", \"token\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}";
+            var res = gson.toJson(new SayHelloHandler().handle(reqString));
+            System.out.println(res);
+        }
+
     }
 }
