@@ -6,8 +6,12 @@ public class MalformedRequestException extends Exception {
         super(message);
     }
 
-    public static MalformedRequestException invalidHeader(int lineNumber) {
-        return new MalformedRequestException("Invalid header at line " + lineNumber);
+    public static MalformedRequestException invalidHeaderFormat(int lineNumber) {
+        return new MalformedRequestException("Invalid header format at line " + lineNumber);
+    }
+
+    public static MalformedRequestException invalidHeaderValue(String header) {
+        return new MalformedRequestException("Invalid value for header " + header);
     }
 
     public static MalformedRequestException sizeMismatch() {

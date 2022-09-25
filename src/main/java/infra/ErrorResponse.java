@@ -37,5 +37,5 @@ public class ErrorResponse extends Throwable {
     public String getKind() { return kind; }
     public String getMessage() { return message; }
 
-    public MessageBody toMessage() { return new MessageBody(message); }
+    public MessageBody toBody() { return new MessageBody(message); }
 }

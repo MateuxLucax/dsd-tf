@@ -4,14 +4,18 @@ import infra.*;
 
 import java.sql.SQLException;
 
-public class CreateUserHandler extends RequestHandler {
+public class CreateUser extends RequestHandler {
+
+    public CreateUser(Request request, ResponseWriter response, SharedContext ctx) {
+        super(request, response, ctx);
+    }
 
     private record RequestBody(String username, String password) {}
 
     private record ResponseBody(long id) {}
 
-    public CreateUserHandler(Request request, ResponseWriter response, SharedContext ctx) {
-        super(request, response, ctx);
+    public boolean tokenRequired() {
+        return false;
     }
 
     public void run() throws ResponseWriteException, SQLException {
@@ -53,8 +57,10 @@ public class CreateUserHandler extends RequestHandler {
             response.writeToBody(gson.toJson(respBody));
 
         } catch (ErrorResponse e) {
+            response.writeError(e.getKind(), gson.toJson(e.toBody()));
             conn.rollback();
-            response.writeError(e.getKind(), gson.toJson(e.toMessage()));
+        } finally {
+            conn.close();
         }
     }
 }

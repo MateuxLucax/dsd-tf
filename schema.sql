@@ -1,6 +1,3 @@
-PRAGMA foreign_keys = ON;
--- ^ tem que ser habilitado *a cada conexão* com o banco
-
 drop table if exists users;
 
 create table users (

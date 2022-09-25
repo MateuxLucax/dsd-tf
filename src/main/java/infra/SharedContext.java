@@ -7,13 +7,18 @@ import helpers.RecordTypeAdapterFactory;
 public class SharedContext {
 
     private final Gson gson;
-
-    // TODO session manager
+    private final SessionManager mgr;
 
     public SharedContext() {
         var gsonb = new GsonBuilder();
         gsonb.registerTypeAdapterFactory(new RecordTypeAdapterFactory());
         this.gson = gsonb.create();
+
+        this.mgr = new SessionManager();
+    }
+
+    public SessionManager sessionManager() {
+        return mgr;
     }
 
     public Gson gson() {

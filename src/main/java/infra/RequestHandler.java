@@ -31,4 +31,9 @@ public abstract class RequestHandler {
     }
 
     public abstract void run() throws ResponseWriteException, SQLException;
+
+    // true by default, handlers that do not require it need to override
+    public boolean tokenRequired() {
+        return true;
+    }
 }

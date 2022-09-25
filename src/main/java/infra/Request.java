@@ -85,13 +85,13 @@ public class Request {
                 if (lineString.isBlank()) break;
 
                 var splitPoint = lineString.indexOf(" ");
-                if (splitPoint == -1) throw MalformedRequestException.invalidHeader(lineCount);
+                if (splitPoint == -1) throw MalformedRequestException.invalidHeaderFormat(lineCount);
 
                 var key = lineString.substring(0, splitPoint).trim().toLowerCase();
                 var value = lineString.substring(splitPoint+1).trim();
 
-                if (key.isBlank()) throw MalformedRequestException.invalidHeader(lineCount);
-                if (value.isBlank()) throw MalformedRequestException.invalidHeader(lineCount);
+                if (key.isBlank()) throw MalformedRequestException.invalidHeaderFormat(lineCount);
+                if (value.isBlank()) throw MalformedRequestException.invalidHeaderFormat(lineCount);
 
                 headers.put(key, value);
 

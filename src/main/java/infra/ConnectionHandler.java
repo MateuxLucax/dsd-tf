@@ -1,7 +1,5 @@
 package infra;
 
-import user.CreateUserHandler;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
@@ -31,15 +29,44 @@ public class ConnectionHandler extends Thread {
 
                     System.out.println("Read request successfully");
 
-                    if (req.operation().equals("create-user")) {
-                        new CreateUserHandler(req, res, ctx).run();
+                    var maybeHandler = OperationLookup.get(req.operation());
+
+                    if (maybeHandler.isEmpty()) {
+                        res.writeError("badRequest", "I haven't implemented that operation yet.");
                     } else {
-                        res.writeError("badRequest", "I haven't implemented that operation yet");
+                        var handler = maybeHandler.get().cons(req, res, ctx);
+                        if (handler.tokenRequired()) {
+                            var headers = req.headers();
+                            if (!headers.containsKey("token")) {
+                                throw MalformedRequestException.missingHeader("token");
+                            }
+                            var token = headers.get("token");
+
+                            var mgr = ctx.sessionManager();
+                            if (!SessionManager.tokenSyntaxValid(token)) {
+                                throw MalformedRequestException.invalidHeaderValue("token");
+                            }
+
+                            if (!mgr.hasSession(token)) {
+                                res.writeError("badRequest", "Token expired");
+                            }
+                        }
+                        handler.run();
                     }
 
-                    // if handler.closeAfterResponse(), by default true, except when the request is for listening to updates
-                    System.out.println("Closing socket");
-                    socket.close();
+                    // TODO what if the request handler run() impl doesn't write anything to the body?
+
+                    // The session is both for authorization and for listening to updates
+                    // Because it's for listening to updates we don't close the socket, but keep it open and manage when to close it
+
+                    // The client is supposed to know when the server has ended a message by using the zero byte as delimiter '\0'
+
+                    // TODO close session handler for when users closes/minimizes the app or the phone goes into sleep mode (whenever it's not active)
+
+                    // We won't implement listening for updates yet (when we do just remove the true||)
+                    if (true|| !req.operation().equals("create-session")) {
+                        socket.close();
+                    }
 
                 } catch (IOException | SQLException e) {
                     res.writeError("internal", "");
@@ -47,7 +74,6 @@ public class ConnectionHandler extends Thread {
                     socket.close();
                 } catch (MalformedRequestException e) {
                     res.writeError("badRequest", e.getMessage());
-                    e.printStackTrace();
                     socket.close();
                 }
             } catch (IOException e) {
