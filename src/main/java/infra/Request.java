@@ -23,9 +23,10 @@ public class Request {
         return body;
     }
 
-    private static void readHeaders(Map<String,String> headers, InputStream in, byte[] buf) throws IOException, MalformedRequestException {
-        var count = 0;
+    private static void readHeaders(Map<String,String> headers, InputStream in) throws IOException, MalformedRequestException {
+        var buf = new byte[1024];
         var len = 0;
+        var count = 0;
 
         while (true) {
             var c = in.read();
@@ -62,33 +63,15 @@ public class Request {
                 throw MalformedRequestException.missingHeader(required);
     }
 
-    private static void readBody(InputStream in, byte[] buf, long size, ByteArrayOutputStream out) throws IOException, MalformedRequestException {
-        var read = 0;
-
-        while (read < size) {
-            var len = in.read(buf);
-
-            if (len == 0 || read + len > size)
-                throw MalformedRequestException.sizeMismatch();
-
-            out.write(buf, 0, len);
-            read += len;
-        }
-    }
-
     public static Request from(InputStream in) throws IOException, MalformedRequestException {
-        var buf = new byte[1024];
-
         var headers = new HashMap<String, String>();
-        readHeaders(headers, in, buf);
+        readHeaders(headers, in);
 
         try {
-            var size = Long.parseLong(headers.get("body-size"));
+            var size = Integer.parseInt(headers.get("body-size"));
             if (size < 0) throw MalformedRequestException.invalidHeaderValue("body-size");
 
-            var out = new ByteArrayOutputStream();
-            readBody(in, buf, size, out);
-            var body = out.toByteArray();
+            var body = in.readNBytes(size);
 
             return new Request(headers, body);
         } catch (NumberFormatException e) {
