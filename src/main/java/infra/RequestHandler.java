@@ -19,12 +19,8 @@ public abstract class RequestHandler {
 
     public <T> T readRequestJson(Class<T> C) throws ErrorResponse {
         try {
-            var body = request.readBody();
+            var body = new String(request.body());
             return ctx.gson().fromJson(body, C);
-        } catch (MalformedRequestException e) {
-            throw new ErrorResponse("badRequest", e.getMessage());
-        } catch (IOException e) {
-            throw new ErrorResponse("internal", "Failed to read request body");
         } catch (JsonSyntaxException e) {
             throw new ErrorResponse("internal", "Failed to parse JSON request body");
         }

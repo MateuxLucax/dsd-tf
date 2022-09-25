@@ -27,16 +27,18 @@ public class ConnectionHandler extends Thread {
                 try {
                     var req = Request.from(in);
 
+                    var headers = req.headers();
+                    var operation = headers.get("operation");
+
                     System.out.println("Read request successfully");
 
-                    var maybeHandler = OperationLookup.get(req.operation());
+                    var maybeHandler = OperationLookup.get(operation);
 
                     if (maybeHandler.isEmpty()) {
                         res.writeError("badRequest", "I haven't implemented that operation yet.");
                     } else {
                         var handler = maybeHandler.get().cons(req, res, ctx);
                         if (handler.tokenRequired()) {
-                            var headers = req.headers();
                             if (!headers.containsKey("token")) {
                                 throw MalformedRequestException.missingHeader("token");
                             }
@@ -64,7 +66,7 @@ public class ConnectionHandler extends Thread {
                     // TODO close session handler for when users closes/minimizes the app or the phone goes into sleep mode (whenever it's not active)
 
                     // We won't implement listening for updates yet (when we do just remove the true||)
-                    if (true|| !req.operation().equals("create-session")) {
+                    if (true|| !operation.equals("create-session")) {
                         socket.close();
                     }
 
