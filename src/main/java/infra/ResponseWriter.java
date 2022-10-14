@@ -88,4 +88,8 @@ public class ResponseWriter {
         var body = err.toBody();
         writeError(err.getKind(), ctx.gson().toJson(body));
     }
+
+    public void writeJson(Object obj) throws ResponseWriteException {
+        writeToBody(ctx.gson().toJson(obj));
+    }
 }

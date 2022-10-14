@@ -30,22 +30,15 @@ create table friends (
 
 drop table if exists friend_request_status;
 
--- read only
-create table friend_request_status (
-        id integer primary key,
-        description text
-);
-insert into friend_request_status values (1, "Pending"), (2, "Accepted"), (3, "Rejected");
-
 drop table if exists friend_requests;
 
--- user X can't send request to Y if there's already a pending request from Y to X
--- but that's application logic (just a reminder for later)
+-- a friend request is pending by existence
+-- once the request is accepted, the users become friends and the request is deleted
+-- or once the request is rejected, the request is just deleted without the users becoming friends
 
 create table friend_requests (
         sender_id   integer,
         receiver_id integer,
-        status      integer,
         created_at  timestamp default current_timestamp not null,
         updated_at  timestamp null,  -- when it was accepted/rejected
 
@@ -59,10 +52,6 @@ create table friend_requests (
         foreign key (receiver_id) references users(id)
             on delete cascade
             on update cascade,
-
-        foreign key (status) references friend_request_status(id)
-            on delete no action
-            on update no action
 );
 
 create index idx_friend_requests_receiver on friend_requests(receiver_id, sender_id);

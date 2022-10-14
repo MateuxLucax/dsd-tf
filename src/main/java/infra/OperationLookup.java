@@ -1,9 +1,7 @@
 package infra;
 
-import user.SearchUsers;
-import user.Whoami;
-import user.CreateSession;
-import user.CreateUser;
+import friends.GetFriendRequests;
+import user.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +22,7 @@ public class OperationLookup {
         map.put("create-session", CreateSession::new);
         map.put("whoami", Whoami::new);
         map.put("search-users", SearchUsers::new);
+        map.put("get-friend-requests", GetFriendRequests::new);
     }
 
     public static Optional<RequestHandlerConstructor> get(String operation) {

@@ -18,7 +18,7 @@ public class TestClient {
 
             var req = String.join("\n", new String[]{
                 "OPERATION create-user",
-                "Body-Size "+body.getBytes().length,
+                "Body-Size " + body.getBytes().length,
                 "TOKEN sdjasodjasiojdaosjd",
                 "TEST something",
                 "",
@@ -33,7 +33,7 @@ public class TestClient {
             var body = "{\"username\": \"admin\", \"password\": \"123\"}";
 
             var req = String.join("\n", new String[]{
-                "body-Size "+body.getBytes().length,
+                "body-Size " + body.getBytes().length,
                 "operation create-session",
                 "",
                 body
@@ -48,10 +48,10 @@ public class TestClient {
         try (var socket = new Socket("localhost", 80)) {
             // body always necessary even if empty
 
-            var req = String.join("\n", new String[] {
+            var req = String.join("\n", new String[]{
                 "body-size 0",
                 "operation whoami",
-                "token "+token,
+                "token " + token,
                 "",
                 ""
             });
@@ -61,12 +61,24 @@ public class TestClient {
 
         try (var socket = new Socket("localhost", 80)) {
             var body = "{\"search\": \"\", \"page\": 1}";
-            var req = String.join("\n", new String[] {
-                "body-size "+body.getBytes().length,
+            var req = String.join("\n", new String[]{
+                "body-size " + body.getBytes().length,
                 "operation search-users",
-                "token "+token,
+                "token " + token,
                 "",
                 body
+            });
+
+            requestThenPrintResponse(socket, req);
+        }
+
+        try (var socket = new Socket("localhost", 80)) {
+            var req = String.join("\n", new String[]{
+                "body-size 0",
+                "token "+token,
+                "operation get-friend-requests",
+                "",
+                ""
             });
 
             requestThenPrintResponse(socket, req);
