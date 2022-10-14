@@ -27,7 +27,7 @@ public class CreateUser extends RequestHandler {
         try {
 
             // Already throws ErrorResponse, so we don't need to worry about it failing
-            var body = readRequestJson(RequestBody.class);
+            var body = readJson(RequestBody.class);
 
             var existsStmt = conn.prepareStatement("SELECT id FROM users WHERE username = ?");
             existsStmt.setString(1, body.username());

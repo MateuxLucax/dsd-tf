@@ -2,7 +2,6 @@ package infra;
 
 import com.google.gson.JsonSyntaxException;
 
-import java.io.IOException;
 import java.sql.SQLException;
 
 public abstract class RequestHandler {
@@ -17,7 +16,7 @@ public abstract class RequestHandler {
         this.ctx = ctx;
     }
 
-    public <T> T readRequestJson(Class<T> C) throws ErrorResponse {
+    public <T> T readJson(Class<T> C) throws ErrorResponse {
         try {
             var body = new String(request.body());
             return ctx.gson().fromJson(body, C);

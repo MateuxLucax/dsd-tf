@@ -3,7 +3,6 @@ package infra;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 // status header is mandatory
 // but implicitly has "ok" value if no explicit value is given
@@ -11,12 +10,14 @@ import java.nio.charset.StandardCharsets;
 public class ResponseWriter {
 
     private final OutputStream out;
+    private final SharedContext ctx;
 
     private boolean wroteStatus;
     private boolean writingBody;
 
-    public ResponseWriter(OutputStream out) {
+    public ResponseWriter(OutputStream out, SharedContext ctx) {
         this.out = out;
+        this.ctx = ctx;
         this.wroteStatus = false;
         this.writingBody = false;
     }
@@ -81,5 +82,10 @@ public class ResponseWriter {
     public void writeError(String kind, String body) throws ResponseWriteException {
         writeHeader("status", "err:" + kind);
         writeToBody(body + '\n');
+    }
+
+    public void writeErrorResponse(ErrorResponse err) throws ResponseWriteException {
+        var body = err.toBody();
+        writeError(err.getKind(), ctx.gson().toJson(body));
     }
 }

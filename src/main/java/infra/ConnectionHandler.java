@@ -22,7 +22,7 @@ public class ConnectionHandler extends Thread {
                 var in = socket.getInputStream();
                 var out = socket.getOutputStream();
 
-                var res = new ResponseWriter(out);
+                var res = new ResponseWriter(out, this.ctx);
 
                 try {
                     var req = Request.from(in);

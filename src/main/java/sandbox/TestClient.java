@@ -24,8 +24,6 @@ public class TestClient {
                 "",
                 body
             });
-            System.out.println(req);
-
             requestThenPrintResponse(socket, req);
         }
 
@@ -40,7 +38,6 @@ public class TestClient {
                 "",
                 body
             });
-            System.out.println(req);
 
             var response = requestThenPrintResponse(socket, req);
             var responseBody = response.split("\n\n")[1];
@@ -61,9 +58,25 @@ public class TestClient {
 
             requestThenPrintResponse(socket, req);
         }
+
+        try (var socket = new Socket("localhost", 80)) {
+            var body = "{\"search\": \"\", \"page\": 1}";
+            var req = String.join("\n", new String[] {
+                "body-size "+body.getBytes().length,
+                "operation search-users",
+                "token "+token,
+                "",
+                body
+            });
+
+            requestThenPrintResponse(socket, req);
+        }
     }
 
     private static String requestThenPrintResponse(Socket socket, String req) throws IOException {
+        System.out.println("---- REQUEST ----");
+        System.out.println(req);
+
         var out = socket.getOutputStream();
         out.write(req.getBytes());
 
@@ -71,6 +84,7 @@ public class TestClient {
         var line = "";
 
         var sb = new StringBuilder();
+        System.out.println("---- RESPONSE ----");
         while ((line = in.readLine()) != null) {
             System.out.println(line);
             sb.append(line).append('\n');

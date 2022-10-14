@@ -1,5 +1,6 @@
 package infra;
 
+import user.SearchUsers;
 import user.Whoami;
 import user.CreateSession;
 import user.CreateUser;
@@ -22,6 +23,7 @@ public class OperationLookup {
         map.put("create-user", CreateUser::new);
         map.put("create-session", CreateSession::new);
         map.put("whoami", Whoami::new);
+        map.put("search-users", SearchUsers::new);
     }
 
     public static Optional<RequestHandlerConstructor> get(String operation) {

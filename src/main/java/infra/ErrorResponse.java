@@ -19,7 +19,7 @@ package infra;
  *     }
  *
  * } catch (ErrorResponse e) {
- *     response.writeError(e.getKind(), gson.toJson(e.toMessage()));
+ *     response.writeErrorResponse(e);
  *     conn.rollback();
  * }
  */

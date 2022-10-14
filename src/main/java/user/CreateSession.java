@@ -24,7 +24,7 @@ public class CreateSession extends RequestHandler {
 
         try (var conn = Database.getConnection()) {
 
-            var body = readRequestJson(RequestBody.class);
+            var body = readJson(RequestBody.class);
 
             var stmt = conn.prepareStatement("SELECT id FROM users WHERE username = ? AND password = ?");
             stmt.setString(1, body.username);
