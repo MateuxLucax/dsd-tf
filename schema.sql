@@ -51,7 +51,7 @@ create table friend_requests (
             on update cascade,
         foreign key (receiver_id) references users(id)
             on delete cascade
-            on update cascade,
+            on update cascade
 );
 
 create index idx_friend_requests_receiver on friend_requests(receiver_id, sender_id);

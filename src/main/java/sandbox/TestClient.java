@@ -73,6 +73,19 @@ public class TestClient {
         }
 
         try (var socket = new Socket("localhost", 80)) {
+            var body = "{\"userId\": 9}";
+            var req = String.join("\n", new String[] {
+                "Body-Size "+body.getBytes().length,
+                "TOKEN "+token,
+                "Operation send-friend-request",
+                "",
+                body
+            });
+
+            requestThenPrintResponse(socket, req);
+        }
+
+        try (var socket = new Socket("localhost", 80)) {
             var req = String.join("\n", new String[]{
                 "body-size 0",
                 "token "+token,

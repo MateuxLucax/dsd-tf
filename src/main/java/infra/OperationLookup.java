@@ -1,6 +1,7 @@
 package infra;
 
 import friends.GetFriendRequests;
+import friends.SendFriendRequest;
 import user.*;
 
 import java.util.HashMap;
@@ -11,7 +12,7 @@ public class OperationLookup {
 
     @FunctionalInterface
     public interface RequestHandlerConstructor {
-        RequestHandler cons(Request req, ResponseWriter res, SharedContext ctx);
+        RequestHandler constructor(Request req, ResponseWriter res, SharedContext ctx);
     }
 
     private static final Map<String, RequestHandlerConstructor> map;
@@ -23,6 +24,7 @@ public class OperationLookup {
         map.put("whoami", Whoami::new);
         map.put("search-users", SearchUsers::new);
         map.put("get-friend-requests", GetFriendRequests::new);
+        map.put("send-friend-request", SendFriendRequest::new);
     }
 
     public static Optional<RequestHandlerConstructor> get(String operation) {

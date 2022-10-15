@@ -37,7 +37,7 @@ public class ConnectionHandler extends Thread {
                     if (maybeHandler.isEmpty()) {
                         res.writeError("badRequest", "I haven't implemented that operation yet.");
                     } else {
-                        var handler = maybeHandler.get().cons(req, res, ctx);
+                        var handler = maybeHandler.get().constructor(req, res, ctx);
                         if (handler.tokenRequired()) {
                             if (!headers.containsKey("token")) {
                                 throw MalformedRequestException.missingHeader("token");

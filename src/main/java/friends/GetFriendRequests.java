@@ -4,6 +4,7 @@ import infra.*;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 
 public class GetFriendRequests extends RequestHandler {
@@ -17,7 +18,7 @@ public class GetFriendRequests extends RequestHandler {
 
     private record UserData(int id, String name) {}
 
-    private record FriendRequestData(UserData from, UserData to, Timestamp createdAt, Timestamp updatedAt) {}
+    private record FriendRequestData(UserData from, UserData to, String createdAt, String updatedAt) {}
 
     @Override
     public void run() throws ResponseWriteException, SQLException {
@@ -50,7 +51,13 @@ public class GetFriendRequests extends RequestHandler {
             while (res.next()) {
                 var sender = new UserData(res.getInt("sender_id"), res.getString("sender_username"));
                 var receiver = new UserData(res.getInt("receiver_id"), res.getString("receiver_username"));
-                var friendRequest = new FriendRequestData(sender, receiver, res.getTimestamp("created_at"), res.getTimestamp("updated_at"));
+
+                var createdAtString = res.getTimestamp("created_at").toInstant().toString();
+
+                var updatedAt = res.getTimestamp("updated_at");
+                var updatedAtString = updatedAt != null ? updatedAt.toInstant().toString() : null;
+
+                var friendRequest = new FriendRequestData(sender, receiver, createdAtString, updatedAtString);
                 friendRequestList.add(friendRequest);
             }
 
