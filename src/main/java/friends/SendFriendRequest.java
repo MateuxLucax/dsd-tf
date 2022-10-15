@@ -6,14 +6,14 @@ import java.sql.SQLException;
 
 public class SendFriendRequest extends RequestHandler {
 
-    public SendFriendRequest(Request request, ResponseWriter response, SharedContext ctx) {
-        super(request, response, ctx);
+    public SendFriendRequest(Request request, SharedContext ctx) {
+        super(request, ctx);
     }
 
     public record RequestData(long userId) {}
 
     @Override
-    public void run() throws ResponseWriteException, SQLException {
+    public Response run() throws SQLException {
 
         var conn = Database.getConnection();
         try {
@@ -77,12 +77,12 @@ public class SendFriendRequest extends RequestHandler {
                 }
             }
 
-            response.writeJson(new MessageBody("Sent friend request successfully."));
-
             conn.commit();
+            return responseFactory.json(new MessageBody("Sent friend request successfully."));
+
         } catch (ErrorResponse e) {
             conn.rollback();
-            response.writeErrorResponse(e);
+            return responseFactory.err(e);
         } finally {
             conn.close();
         }

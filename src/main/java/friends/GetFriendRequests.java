@@ -9,8 +9,8 @@ import java.util.ArrayList;
 
 public class GetFriendRequests extends RequestHandler {
 
-    public GetFriendRequests(Request request, ResponseWriter response, SharedContext ctx) {
-        super(request, response, ctx);
+    public GetFriendRequests(Request request, SharedContext ctx) {
+        super(request, ctx);
     }
 
     // Just returns all friends requests involving the user
@@ -21,7 +21,7 @@ public class GetFriendRequests extends RequestHandler {
     private record FriendRequestData(UserData from, UserData to, String createdAt, String updatedAt) {}
 
     @Override
-    public void run() throws ResponseWriteException, SQLException {
+    public Response run() throws SQLException {
 
         try (var conn = Database.getConnection()) {
 
@@ -61,7 +61,7 @@ public class GetFriendRequests extends RequestHandler {
                 friendRequestList.add(friendRequest);
             }
 
-            response.writeJson(friendRequestList);
+            return responseFactory.json(friendRequestList);
         }
     }
 }

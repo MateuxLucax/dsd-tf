@@ -6,8 +6,8 @@ import java.sql.SQLException;
 
 public class CreateUser extends RequestHandler {
 
-    public CreateUser(Request request, ResponseWriter response, SharedContext ctx) {
-        super(request, response, ctx);
+    public CreateUser(Request request, SharedContext ctx) {
+        super(request, ctx);
     }
 
     private record RequestBody(String username, String password) {}
@@ -18,15 +18,12 @@ public class CreateUser extends RequestHandler {
         return false;
     }
 
-    public void run() throws ResponseWriteException, SQLException {
+    public Response run() throws SQLException {
 
-        var gson = ctx.gson();
         var conn = Database.getConnection();
         conn.setAutoCommit(false);
 
         try {
-
-            // Already throws ErrorResponse, so we don't need to worry about it failing
             var body = readJson(RequestBody.class);
 
             var existsStmt = conn.prepareStatement("SELECT id FROM users WHERE username = ?");
@@ -52,13 +49,12 @@ public class CreateUser extends RequestHandler {
             var id = idRes.getLong(1);
 
             conn.commit();
-
-            var respBody = new ResponseBody(id);
-            response.writeToBody(gson.toJson(respBody));
+            return responseFactory.json(new ResponseBody(id));
 
         } catch (ErrorResponse e) {
-            response.writeError(e.getKind(), gson.toJson(e.toBody()));
+            var resp = responseFactory.err(e);
             conn.rollback();
+            return resp;
         } finally {
             conn.close();
         }

@@ -8,8 +8,8 @@ import java.sql.SQLException;
 
 public class CreateSession extends RequestHandler {
 
-    public CreateSession(Request request, ResponseWriter response, SharedContext ctx) {
-        super(request, response, ctx);
+    public CreateSession(Request request, SharedContext ctx) {
+        super(request, ctx);
     }
 
     public record RequestBody(String username, String password) {}
@@ -20,7 +20,7 @@ public class CreateSession extends RequestHandler {
         return false;
     }
 
-    public void run() throws ResponseWriteException, SQLException {
+    public Response run() throws SQLException {
 
         try (var conn = Database.getConnection()) {
 
@@ -34,14 +34,10 @@ public class CreateSession extends RequestHandler {
                 throw new ErrorResponse("badRequest", "Incorrect username or password");
             }
             var id = result.getLong("id");
-
             var token = ctx.sessionManager().createSession(id);
-
-            var responseBody = new ResponseBody(token);
-            response.writeToBody(ctx.gson().toJson(responseBody));
-
+            return responseFactory.json(new ResponseBody(token));
         } catch (ErrorResponse e) {
-            response.writeError(e.getKind(), ctx.gson().toJson(e.toBody()));
+            return responseFactory.err(e);
         }
 
     }

@@ -7,14 +7,14 @@ import java.sql.Timestamp;
 
 public class Whoami extends RequestHandler {
 
-    public Whoami(Request request, ResponseWriter response, SharedContext ctx) {
-        super(request, response, ctx);
+    public Whoami(Request request, SharedContext ctx) {
+        super(request, ctx);
     }
 
     private record UserData(String username, Timestamp createdAt, Timestamp updatedAt) {}
 
     @Override
-    public void run() throws ResponseWriteException, SQLException {
+    public Response run() throws SQLException {
 
         var token = request.headers().get("token");
         var id = ctx.sessionManager().getSessionData(token).getUserId();
@@ -37,10 +37,10 @@ public class Whoami extends RequestHandler {
             var updatedAT = result.getTimestamp("updated_at");
 
             var body = new UserData(username, createdAt, updatedAT);
-            response.writeToBody(ctx.gson().toJson(body));
+            return responseFactory.json(body);
 
         } catch (ErrorResponse e) {
-            response.writeError(e.getKind(), ctx.gson().toJson(e.toBody()));
+            return responseFactory.err(e);
         }
     }
 }

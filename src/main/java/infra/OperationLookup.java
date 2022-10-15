@@ -12,7 +12,7 @@ public class OperationLookup {
 
     @FunctionalInterface
     public interface RequestHandlerConstructor {
-        RequestHandler constructor(Request req, ResponseWriter res, SharedContext ctx);
+        RequestHandler constructor(Request req, SharedContext ctx);
     }
 
     private static final Map<String, RequestHandlerConstructor> map;

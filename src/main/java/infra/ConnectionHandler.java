@@ -3,6 +3,7 @@ package infra;
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class ConnectionHandler extends Thread {
 
@@ -22,7 +23,10 @@ public class ConnectionHandler extends Thread {
                 var in = socket.getInputStream();
                 var out = socket.getOutputStream();
 
-                var res = new ResponseWriter(out, this.ctx);
+                var factory = ctx.responseFactory();
+
+                Optional<Response> responseToWrite = Optional.empty();
+                var shouldCloseSocket = true;
 
                 try {
                     var req = Request.from(in);
@@ -30,14 +34,13 @@ public class ConnectionHandler extends Thread {
                     var headers = req.headers();
                     var operation = headers.get("operation");
 
-                    System.out.println("Read request successfully");
-
                     var maybeHandler = OperationLookup.get(operation);
 
                     if (maybeHandler.isEmpty()) {
-                        res.writeError("badRequest", "I haven't implemented that operation yet.");
+                        responseToWrite = Optional.of(factory.err("badRequest", "I haven't implemented that operation yet."));
                     } else {
-                        var handler = maybeHandler.get().constructor(req, res, ctx);
+                        var handler = maybeHandler.get().constructor(req, ctx);
+
                         if (handler.tokenRequired()) {
                             if (!headers.containsKey("token")) {
                                 throw MalformedRequestException.missingHeader("token");
@@ -50,33 +53,25 @@ public class ConnectionHandler extends Thread {
                             }
 
                             if (!mgr.hasSession(token)) {
-                                res.writeError("badRequest", "Token expired");
+                                responseToWrite = Optional.of(factory.err("badRequest", "Token expired"));
                             }
                         }
-                        handler.run();
-                    }
 
-                    // TODO what if the request handler run() impl doesn't write anything to the body?
-
-                    // The session is both for authorization and for listening to updates
-                    // Because it's for listening to updates we don't close the socket, but keep it open and manage when to close it
-
-                    // The client is supposed to know when the server has ended a message by using the zero byte as delimiter '\0'
-
-                    // TODO close session handler for when users closes/minimizes the app or the phone goes into sleep mode (whenever it's not active)
-
-                    // We won't implement listening for updates yet (when we do just remove the true||)
-                    if (true|| !operation.equals("create-session")) {
-                        socket.close();
+                        responseToWrite = Optional.of(handler.run());
                     }
 
                 } catch (IOException | SQLException e) {
-                    res.writeError("internal", "");
+                    responseToWrite = Optional.of(factory.err("internal", ""));
                     e.printStackTrace();
-                    socket.close();
                 } catch (MalformedRequestException e) {
-                    res.writeError("badRequest", e.getMessage());
-                    socket.close();
+                    responseToWrite = Optional.of(factory.err("badRequest", e.getMessage()));
+                } finally {
+
+                    responseToWrite.orElse(factory.err("internal", "No response")).writeTo(out);
+                    if (shouldCloseSocket) {
+                        socket.close();
+                    }
+                    
                 }
             } catch (IOException e) {
                 System.err.println("FATAL ERROR: Failed to get socket input and/or output streams, or to close the socket");

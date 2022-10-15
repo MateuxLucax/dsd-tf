@@ -7,8 +7,8 @@ import java.util.ArrayList;
 
 public class SearchUsers extends RequestHandler {
 
-    public SearchUsers(Request request, ResponseWriter response, SharedContext ctx) {
-        super(request, response, ctx);
+    public SearchUsers(Request request, SharedContext ctx) {
+        super(request, ctx);
     }
 
     private static final int RESULTS_PER_PAGE = 20;
@@ -18,7 +18,7 @@ public class SearchUsers extends RequestHandler {
     private record UserData(int id, String name) {}
 
     @Override
-    public void run() throws ResponseWriteException, SQLException {
+    public Response run() throws SQLException {
         try (var conn = Database.getConnection()) {
             var req = readJson(RequestData.class);
 
@@ -44,9 +44,9 @@ public class SearchUsers extends RequestHandler {
                 users.add(user);
             }
 
-            response.writeToBody(ctx.gson().toJson(users));
+            return responseFactory.json(users);
         } catch (ErrorResponse e) {
-            response.writeErrorResponse(e);
+            return responseFactory.err(e);
         }
     }
 }

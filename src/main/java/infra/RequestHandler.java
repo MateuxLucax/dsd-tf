@@ -7,13 +7,13 @@ import java.sql.SQLException;
 public abstract class RequestHandler {
 
     protected final Request request;
-    protected final ResponseWriter response;
     protected final SharedContext ctx;
+    protected final ResponseFactory responseFactory; // shortcut, will always be used in every request handler
 
-    public RequestHandler(Request request, ResponseWriter response, SharedContext ctx) {
+    public RequestHandler(Request request, SharedContext ctx) {
         this.request = request;
-        this.response = response;
         this.ctx = ctx;
+        this.responseFactory = ctx.responseFactory();
     }
 
     public <T> T readJson(Class<T> C) throws ErrorResponse {
@@ -25,7 +25,7 @@ public abstract class RequestHandler {
         }
     }
 
-    public abstract void run() throws ResponseWriteException, SQLException;
+    public abstract Response run() throws SQLException;
 
     // true by default, handlers that do not require it need to override
     public boolean tokenRequired() {
