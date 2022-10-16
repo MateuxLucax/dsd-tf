@@ -19,11 +19,12 @@ public class Response {
         try {
             var status = ok ? "ok" : String.format("err:%s", errKind);
             var statusHeader = String.format("status %s", status);
+            var bodySizeHeader = String.format("body-size %d", body.length);
 
             out.write((statusHeader+'\n').getBytes());
+            out.write((bodySizeHeader+'\n').getBytes());
             out.write('\n');
             out.write(body);
-
         } catch (IOException ex) {
             throw new ResponseWriteException(ex);
         }

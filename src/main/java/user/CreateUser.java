@@ -30,7 +30,7 @@ public class CreateUser extends RequestHandler {
             existsStmt.setString(1, body.username());
             var existsRes = existsStmt.executeQuery();
             if (existsRes.next()) {
-                throw new ErrorResponse("badRequest", "User already exists");
+                throw new ErrorResponse("badRequest", "Username not available");
             }
 
             var createStmt = conn.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)");

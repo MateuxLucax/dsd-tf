@@ -50,6 +50,9 @@ public class Request {
                 if (key.isBlank()) throw MalformedRequestException.invalidHeaderFormat(count);
                 if (val.isBlank()) throw MalformedRequestException.invalidHeaderFormat(count);
 
+                // TODO also detect invalid characters in header key
+                //  only alphanumeric [a-zA-Z0-9] and dash -
+
                 headers.put(key, val);
 
                 // End of request or prepare for next line
@@ -71,7 +74,13 @@ public class Request {
             var size = Integer.parseInt(headers.get("body-size"));
             if (size < 0) throw MalformedRequestException.invalidHeaderValue("body-size");
 
-            var body = in.readNBytes(size);
+            // could use readNBytes, but this makes debugging easier
+            var body = new byte[size];
+            var off = 0;
+            while (off < size) {
+                var c = in.read();
+                body[off++] = (byte) c;
+            }
 
             return new Request(headers, body);
         } catch (NumberFormatException e) {
