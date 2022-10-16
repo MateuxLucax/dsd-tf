@@ -26,16 +26,18 @@ package infra;
 
 public class ErrorResponse extends Throwable {
 
-    private String kind;
-    private String message;
+    private final String kind; // like http status codes
+    private final ErrCode code; // replaces what would be a 'message'
+    // client is responsible for translating the code into the appropriate human-readable message
+    // possibly in different languages
 
-    public ErrorResponse(String kind, String message) {
+    public ErrorResponse(String kind, ErrCode code) {
         this.kind = kind;
-        this.message = message;
+        this.code = code;
     }
 
     public String getKind() { return kind; }
-    public String getMessage() { return message; }
+    public ErrCode getCode() { return code; }
 
-    public MessageBody toBody() { return new MessageBody(message); }
+    public MessageCodeBody toResponseBody() { return new MessageCodeBody(code.toString()); }
 }

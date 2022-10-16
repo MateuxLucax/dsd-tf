@@ -31,7 +31,7 @@ public class CreateSession extends RequestHandler {
             stmt.setString(2, body.password);
             var result = stmt.executeQuery();
             if (!result.next()) {
-                throw new ErrorResponse("badRequest", "Incorrect username or password");
+                throw new ErrorResponse("badRequest", ErrCode.INCORRECT_CREDENTIALS);
             }
             var id = result.getLong("id");
             var token = ctx.sessionManager().createSession(id);

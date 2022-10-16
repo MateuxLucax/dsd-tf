@@ -8,7 +8,9 @@ public abstract class RequestHandler {
 
     protected final Request request;
     protected final SharedContext ctx;
-    protected final ResponseFactory responseFactory; // shortcut, will always be used in every request handler
+
+    protected final ResponseFactory responseFactory;
+    // shortcut for ctx.responseFactory(), will always be used in every request handler
 
     public RequestHandler(Request request, SharedContext ctx) {
         this.request = request;
@@ -21,7 +23,7 @@ public abstract class RequestHandler {
             var body = new String(request.body());
             return ctx.gson().fromJson(body, C);
         } catch (JsonSyntaxException e) {
-            throw new ErrorResponse("internal", "Failed to parse JSON request body");
+            throw new ErrorResponse("internal", ErrCode.FAILED_TO_PARSE_JSON);
         }
     }
 

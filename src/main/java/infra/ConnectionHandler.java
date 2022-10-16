@@ -39,7 +39,7 @@ public class ConnectionHandler extends Thread {
                     var maybeHandler = OperationLookup.get(operation);
 
                     if (maybeHandler.isEmpty()) {
-                        responseToWrite = Optional.of(factory.err("badRequest", "I haven't implemented that operation yet."));
+                        responseToWrite = Optional.of(factory.err("badRequest", ErrCode.UNKNOWN_OPERATION));
                     } else {
                         var handler = maybeHandler.get().constructor(req, ctx);
 
@@ -55,7 +55,7 @@ public class ConnectionHandler extends Thread {
                             }
 
                             if (!mgr.hasSession(token)) {
-                                responseToWrite = Optional.of(factory.err("badRequest", "Token expired"));
+                                responseToWrite = Optional.of(factory.err("badRequest", ErrCode.TOKEN_EXPIRED));
                             }
                         }
 
@@ -63,17 +63,17 @@ public class ConnectionHandler extends Thread {
                     }
 
                 } catch (IOException | SQLException e) {
-                    responseToWrite = Optional.of(factory.err("internal", ""));
+                    responseToWrite = Optional.of(factory.err("internal", ErrCode.INTERNAL));
                     e.printStackTrace();
                 } catch (MalformedRequestException e) {
-                    responseToWrite = Optional.of(factory.err("badRequest", e.getMessage()));
+                    responseToWrite = Optional.of(factory.err("badRequest", ErrCode.MALFORMED_REQUEST));
                 } finally {
 
-                    responseToWrite.orElse(factory.err("internal", "No response")).writeTo(out);
+                    responseToWrite.orElse(factory.err("internal", ErrCode.NO_RESPONSE)).writeTo(out);
                     if (shouldCloseSocket) {
                         socket.close();
                     }
-                    
+
                 }
             } catch (IOException e) {
                 System.err.println("FATAL ERROR: Failed to get socket input and/or output streams, or to close the socket");

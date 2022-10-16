@@ -29,7 +29,7 @@ public class Whoami extends RequestHandler {
                 //  which btw should be an atomic operation
                 System.err.println("INTERNAL ERROR: ID retrieved from session manager does not exist");
 
-                throw new ErrorResponse("internal", "");
+                throw new ErrorResponse("internal", ErrCode.INTERNAL);
             }
 
             var username = result.getString("username");

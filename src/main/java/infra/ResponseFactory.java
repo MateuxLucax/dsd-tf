@@ -11,11 +11,11 @@ public class ResponseFactory {
     }
 
     public Response err(ErrorResponse e) {
-        return new Response(false, e.getKind(), gson.toJson(e.toBody()).getBytes());
+        return new Response(false, e.getKind(), gson.toJson(e.toResponseBody()).getBytes());
     }
 
-    public Response err(String kind, String msg) {
-        return err(new ErrorResponse(kind, msg));
+    public Response err(String kind, ErrCode code) {
+        return err(new ErrorResponse(kind, code));
     }
 
     public Response json(Object o) {

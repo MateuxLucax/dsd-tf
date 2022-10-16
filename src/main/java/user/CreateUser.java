@@ -30,7 +30,7 @@ public class CreateUser extends RequestHandler {
             existsStmt.setString(1, body.username());
             var existsRes = existsStmt.executeQuery();
             if (existsRes.next()) {
-                throw new ErrorResponse("badRequest", "Username not available");
+                throw new ErrorResponse("badRequest", ErrCode.USERNAME_IN_USE);
             }
 
             var createStmt = conn.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)");
@@ -38,13 +38,13 @@ public class CreateUser extends RequestHandler {
             createStmt.setString(2, body.password());
             var rowCount = createStmt.executeUpdate();
             if (rowCount == 0) {
-                throw new ErrorResponse("internal", "Failed to create the user");
+                throw new ErrorResponse("internal", ErrCode.FAILED_TO_CREATE_USER);
             }
 
             var idStmt = conn.prepareStatement("SELECT MAX(id) AS id FROM users");
             var idRes = idStmt.executeQuery();
             if (!idRes.next()) {
-                throw new ErrorResponse("internal", "Failed to retrieve created user id");
+                throw new ErrorResponse("internal", ErrCode.FAILED_TO_CREATE_USER);
             }
             var id = idRes.getLong(1);
 
@@ -52,9 +52,8 @@ public class CreateUser extends RequestHandler {
             return responseFactory.json(new ResponseBody(id));
 
         } catch (ErrorResponse e) {
-            var resp = responseFactory.err(e);
             conn.rollback();
-            return resp;
+            return responseFactory.err(e);
         } finally {
             conn.close();
         }

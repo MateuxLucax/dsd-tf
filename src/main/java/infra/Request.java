@@ -29,7 +29,9 @@ public class Request {
         var count = 0;
 
         while (true) {
+
             var c = in.read();
+            System.out.print((char) c);
 
             if (c != -1 && c != '\n' && len < buf.length) {
                 buf[len++] = (byte) c;

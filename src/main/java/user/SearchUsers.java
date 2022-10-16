@@ -23,10 +23,10 @@ public class SearchUsers extends RequestHandler {
             var req = readJson(RequestData.class);
 
             if (req.page <= 0) {
-                throw new ErrorResponse("badRequest", "Non-positive page number");
+                throw new ErrorResponse("badRequest", ErrCode.INVALID_PAGE_NUMBER);
             }
 
-            // TODO could also return if is friend, friend request status, etc.
+            // TODO return more info: whether is friend, friend request status, etc.
 
             var sql = "SELECT id, username FROM users WHERE username like ? LIMIT ? OFFSET ?";
             var stmt = conn.prepareStatement(sql);

@@ -3,6 +3,7 @@ package sandbox;
 // Pacote pra escrever coisas só pra testar
 
 import com.google.gson.JsonParser;
+import infra.ErrCode;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -96,6 +97,32 @@ public class TestClient {
 
             requestThenPrintResponse(socket, req);
         }
+
+        try (var socket = new Socket("localhost", 80)) {
+            var req = String.join("\n", new String[]{
+                "operation get-all-error-codes",
+                "body-size 0",
+                "",
+                ""
+            });
+            requestThenPrintResponse(socket, req);
+        }
+
+        try (var socket = new Socket("localhost", 80)) {
+            var req = String.join("\n", new String[]{
+                "operation get-index",
+                "body-size 0",
+                "",
+                ""
+            });
+            requestThenPrintResponse(socket, req);
+        }
+
+        var op1 = ErrCode.from("jiajdoas");
+        System.out.println(op1.isPresent() ? op1.get() : "no");
+
+        var op2 = ErrCode.from("NO_USER_WITH_GIVEN_ID");
+        System.out.println(op2.isPresent() ? op2.get() : "no");
     }
 
     private static String requestThenPrintResponse(Socket socket, String req) throws IOException {
