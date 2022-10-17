@@ -16,6 +16,11 @@ public class Server {
 
             var sharedContext = new SharedContext();
 
+            var sessionCleaner = new SessionCleaner(
+                sharedContext.sessionManager(), SessionManager.THREAD_SLEEP.toMillis()
+            );
+            sessionCleaner.start();
+
             while (true) {
                 // Don't auto-close the socket, some connections will be kept alive for listening to updates
                 var socket = server.accept();
