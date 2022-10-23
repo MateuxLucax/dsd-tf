@@ -16,7 +16,6 @@ public enum MsgCode {
     // create-user
     FAILED_TO_CREATE_USER,
     USERNAME_IN_USE,
-    USER_CREATED_SUCCESSFULLY,
 
     // create-session
     INCORRECT_CREDENTIALS,
@@ -30,6 +29,11 @@ public enum MsgCode {
     THEY_ALREADY_SENT_FRIEND_REQUEST,
     FAILED_TO_SEND_FRIEND_REQUEST,
     SENT_FRIEND_REQUEST_SUCCESSFULLY,
+
+    // finish-friend-request
+    FRIEND_REQUEST_NOT_FOUND,
+    FAILED_TO_FINISH_FRIEND_REQUEST,
+    FINISHED_FRIEND_REQUEST_SUCCESSFULLY,
     ;
 
     public static Optional<MsgCode> from(String name) {

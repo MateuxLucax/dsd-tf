@@ -3,7 +3,6 @@ package sandbox;
 // Pacote pra escrever coisas só pra testar
 
 import com.google.gson.JsonParser;
-import infra.MsgCode;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,135 +11,111 @@ import java.net.Socket;
 
 public class TestClient {
 
-    public static void main(String[] args) throws IOException {
-
+    public static String makeRequest(String operation, String body, String token) throws IOException {
         try (var socket = new Socket("localhost", 80)) {
-            var body = "{\"username\": \"admin\", \"password\": \"123\", \"fullname\": \"joao jose da silva\"}";
+            var request = "";
+            request += "operation " + operation + '\n';
+            request += "body-size " + body.getBytes().length + '\n';
+            if (token != null) {
+                request += "token " + token + '\n';
+            }
+            request += "\n";
+            request += body;
 
-            var req = String.join("\n", new String[]{
-                "OPERATION create-user",
-                "Body-Size " + body.getBytes().length,
-                "TOKEN sdjasodjasiojdaosjd",
-                "TEST something",
-                "",
-                body
-            });
-            requestThenPrintResponse(socket, req);
+            System.out.println("--- REQUEST ---");
+            System.out.println(request);
+
+            var out = socket.getOutputStream();
+            out.write(request.getBytes());
+
+            var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            var line = "";
+
+            var sb = new StringBuilder();
+            System.out.println("---- RESPONSE ----");
+            while ((line = in.readLine()) != null) {
+                System.out.println(line);
+                sb.append(line).append('\n');
+            }
+            return sb.toString();
         }
-
-        var token = "";
-
-        try (var socket = new Socket("localhost", 80)) {
-            var body = "{\"username\": \"admin\", \"password\": \"123\"}";
-
-            var req = String.join("\n", new String[]{
-                "body-Size " + body.getBytes().length,
-                "operation create-session",
-                "",
-                body
-            });
-
-            var response = requestThenPrintResponse(socket, req);
-            var responseBody = response.split("\n\n")[1];
-
-            token = JsonParser.parseString(responseBody).getAsJsonObject().getAsJsonPrimitive("token").getAsString();
-        }
-
-        try (var socket = new Socket("localhost", 80)) {
-            // body always necessary even if empty
-
-            var req = String.join("\n", new String[]{
-                "body-size 0",
-                "operation whoami",
-                "token " + token,
-                "",
-                ""
-            });
-
-            requestThenPrintResponse(socket, req);
-        }
-
-        try (var socket = new Socket("localhost", 80)) {
-            var body = "{\"search\": \"\", \"page\": 1}";
-            var req = String.join("\n", new String[]{
-                "body-size " + body.getBytes().length,
-                "operation search-users",
-                "token " + token,
-                "",
-                body
-            });
-
-            requestThenPrintResponse(socket, req);
-        }
-
-        try (var socket = new Socket("localhost", 80)) {
-            var body = "{\"userId\": 9}";
-            var req = String.join("\n", new String[] {
-                "Body-Size "+body.getBytes().length,
-                "TOKEN "+token,
-                "Operation send-friend-request",
-                "",
-                body
-            });
-
-            requestThenPrintResponse(socket, req);
-        }
-
-        try (var socket = new Socket("localhost", 80)) {
-            var req = String.join("\n", new String[]{
-                "body-size 0",
-                "token "+token,
-                "operation get-friend-requests",
-                "",
-                ""
-            });
-
-            requestThenPrintResponse(socket, req);
-        }
-
-        try (var socket = new Socket("localhost", 80)) {
-            var req = String.join("\n", new String[]{
-                "operation get-all-error-codes",
-                "body-size 0",
-                "",
-                ""
-            });
-            requestThenPrintResponse(socket, req);
-        }
-
-        try (var socket = new Socket("localhost", 80)) {
-            var req = String.join("\n", new String[]{
-                "operation get-index",
-                "body-size 0",
-                "",
-                ""
-            });
-            requestThenPrintResponse(socket, req);
-        }
-
-        var op1 = MsgCode.from("jiajdoas");
-        System.out.println(op1.isPresent() ? op1.get() : "no");
-
-        var op2 = MsgCode.from("NO_USER_WITH_GIVEN_ID");
-        System.out.println(op2.isPresent() ? op2.get() : "no");
     }
 
-    private static String requestThenPrintResponse(Socket socket, String req) throws IOException {
-        System.out.println("---- REQUEST ----");
-        System.out.println(req);
+    public static String loginGetToken(String username, String password) throws IOException {
+        var body = "{\"username\": \""+username+"\", \"password\": \""+password+"\"}";
+        var response = makeRequest("create-session", body, null);
+        var responseBody = response.split("\n")[3];
+        var token = JsonParser.parseString(responseBody).getAsJsonObject().getAsJsonPrimitive("token").getAsString();
+        return token;
+    }
 
-        var out = socket.getOutputStream();
-        out.write(req.getBytes());
+    public static void testFriendRequests() throws IOException {
+        String body;
 
-        var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        var line = "";
+        //body = "{\"username\": \"dude\", \"fullname\": \"john dude\", \"password\": \"123\"}";
+        //makeRequest("create-user", body, null);
+        var dudeToken = loginGetToken("dude", "123");
 
-        var sb = new StringBuilder();
-        System.out.println("---- RESPONSE ----");
-        while ((line = in.readLine()) != null) {
-            System.out.println(line);
-            sb.append(line).append('\n');
-        }
-        return sb.toString();
+        //body = "{\"username\": \"bro\", \"fullname\": \"bro smith\", \"password\": \"123\"}";
+        //makeRequest("create-user", body, null);
+        var broToken = loginGetToken("bro", "123");
+
+        final var dudeId = 2;
+        final var broId = 3;
+
+        // dude send friend request to bro
+        body = "{\"userId\": "+broId+"}";
+        makeRequest("send-friend-request", body, dudeToken);
+
+        // list friend requests for both
+        makeRequest("get-friend-requests", "", dudeToken);
+        makeRequest("get-friend-requests", "", broToken);
+
+        // sends again, should return an error
+        body = "{\"userId\": "+broId+"}";
+        makeRequest("send-friend-request", body, dudeToken);
+
+        // bro accepts the request
+        body = "{\"senderId\": "+dudeId+", \"accepted\": true}";
+        makeRequest("finish-friend-request", body, broToken);
+
+        // dude can't accept his own request, should return an error
+        body = "{\"senderId\": "+dudeId+", \"accepted\": true}";
+        makeRequest("finish-friend-request", body, dudeToken);
+
+        // list friend requests for both, should be empty
+        makeRequest("get-friend-requests", "", dudeToken);
+        makeRequest("get-friend-requests", "", broToken);
+
+        // TODO list friends (for both)
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        testFriendRequests();
+
+
+        /*
+        String body;
+
+        body = "{\"username\": \"admin\", \"password\": \"123\", \"fullname\": \"joao jose da silva\"}";
+        makeRequest("create-user", body, null);
+
+        var token = loginGetToken("admin", "123");
+
+        makeRequest("whoami", "", token);
+
+        body = "{\"search\": \"\", \"page\": 1}";
+        makeRequest("search-users", body, token);
+
+        body = "{\"userId\": 9}";
+        makeRequest("send-friend-request", body, token);
+
+        makeRequest("get-friend-requests", "", token);
+
+        makeRequest("get-all-error-codes", "", token);
+
+        makeRequest("get-index", "", token);
+         */
     }
 }

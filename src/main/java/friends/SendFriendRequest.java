@@ -65,6 +65,8 @@ public class SendFriendRequest extends RequestHandler {
                 }
             }
 
+            // TODO verify they aren't already friends
+
             // finally send the request
             {
                 var sql = "INSERT INTO friend_requests (sender_id, receiver_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)";

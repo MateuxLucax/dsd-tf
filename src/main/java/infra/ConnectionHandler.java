@@ -31,8 +31,6 @@ public class ConnectionHandler extends Thread {
                 try {
                     var req = Request.from(in);
 
-                    System.out.println("Got request, here's the body:" + new String(req.body()));
-
                     var headers = req.headers();
                     var operation = headers.get("operation");
 

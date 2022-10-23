@@ -1,5 +1,6 @@
 package infra;
 
+import friends.FinishFriendRequest;
 import friends.GetFriendRequests;
 import friends.SendFriendRequest;
 import meta.GetAllErrorCodes;
@@ -13,7 +14,6 @@ import java.util.Optional;
 
 public class OperationLookup {
 
-    @FunctionalInterface
     public interface RequestHandlerConstructor {
         RequestHandler constructor(Request req, SharedContext ctx);
     }
@@ -22,6 +22,7 @@ public class OperationLookup {
 
     static {
         map = new HashMap<>();
+
         map.put("get-all-error-codes", GetAllErrorCodes::new);
         map.put("get-index", GetOperationIndex::new);
 
@@ -32,6 +33,7 @@ public class OperationLookup {
 
         map.put("get-friend-requests", GetFriendRequests::new);
         map.put("send-friend-request", SendFriendRequest::new);
+        map.put("finish-friend-request", FinishFriendRequest::new);
     }
 
     public static Collection<String> names() {

@@ -11,6 +11,7 @@ public class CreateUser extends RequestHandler {
     }
 
     private record RequestBody(String username, String password, String fullname) {}
+    private record ResponseBody(long id) {}
 
     public boolean tokenRequired() {
         return false;
@@ -40,8 +41,15 @@ public class CreateUser extends RequestHandler {
                 throw new ErrorResponse("internal", MsgCode.FAILED_TO_CREATE_USER);
             }
 
-            conn.commit();
-            return responseFactory.json(MessageCodeBody.from(MsgCode.USER_CREATED_SUCCESSFULLY));
+            var idStmt = conn.prepareStatement("SELECT MAX(id) AS id FROM users");
+            var idRes = idStmt.executeQuery();
+            if (!idRes.next()) {
+                throw new ErrorResponse("internal", MsgCode.FAILED_TO_CREATE_USER);
+            }
+            var id = idRes.getLong(1);
+
+            var responseBody = new ResponseBody(id);
+            return responseFactory.json(responseBody);
 
         } catch (ErrorResponse e) {
             conn.rollback();

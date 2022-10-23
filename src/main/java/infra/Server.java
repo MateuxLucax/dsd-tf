@@ -24,7 +24,6 @@ public class Server {
             while (true) {
                 // Don't auto-close the socket, some connections will be kept alive for listening to updates
                 var socket = server.accept();
-                System.out.println("Request!");
                 new ConnectionHandler(socket, sharedContext).start();
             }
 

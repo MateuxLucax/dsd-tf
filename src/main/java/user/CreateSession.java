@@ -14,7 +14,8 @@ public class CreateSession extends RequestHandler {
 
     public record RequestBody(String username, String password) {}
 
-    public record ResponseBody(String token) {}
+    // returns user data missing in client
+    public record ResponseBody(String token, long id, String fullname) {}
 
     public boolean tokenRequired() {
         return false;
@@ -26,7 +27,11 @@ public class CreateSession extends RequestHandler {
 
             var body = readJson(RequestBody.class);
 
-            var stmt = conn.prepareStatement("SELECT id FROM users WHERE username = ? AND password = ?");
+            var stmt = conn.prepareStatement(
+                "SELECT id, fullname "+
+                "FROM users "+
+                "WHERE username = ? AND password = ?"
+            );
             stmt.setString(1, body.username);
             stmt.setString(2, body.password);
             var result = stmt.executeQuery();
@@ -34,8 +39,9 @@ public class CreateSession extends RequestHandler {
                 throw new ErrorResponse("badRequest", MsgCode.INCORRECT_CREDENTIALS);
             }
             var id = result.getLong("id");
+            var fullname = result.getString("fullname");
             var token = ctx.sessionManager().createSession(id);
-            return responseFactory.json(new ResponseBody(token));
+            return responseFactory.json(new ResponseBody(token, id, fullname));
         } catch (ErrorResponse e) {
             return responseFactory.err(e);
         }
