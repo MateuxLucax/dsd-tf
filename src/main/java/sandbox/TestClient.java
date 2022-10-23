@@ -3,7 +3,7 @@ package sandbox;
 // Pacote pra escrever coisas só pra testar
 
 import com.google.gson.JsonParser;
-import infra.ErrCode;
+import infra.MsgCode;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +15,7 @@ public class TestClient {
     public static void main(String[] args) throws IOException {
 
         try (var socket = new Socket("localhost", 80)) {
-            var body = "{\"username\": \"admin\", \"password\": \"123\"}";
+            var body = "{\"username\": \"admin\", \"password\": \"123\", \"fullname\": \"joao jose da silva\"}";
 
             var req = String.join("\n", new String[]{
                 "OPERATION create-user",
@@ -118,10 +118,10 @@ public class TestClient {
             requestThenPrintResponse(socket, req);
         }
 
-        var op1 = ErrCode.from("jiajdoas");
+        var op1 = MsgCode.from("jiajdoas");
         System.out.println(op1.isPresent() ? op1.get() : "no");
 
-        var op2 = ErrCode.from("NO_USER_WITH_GIVEN_ID");
+        var op2 = MsgCode.from("NO_USER_WITH_GIVEN_ID");
         System.out.println(op2.isPresent() ? op2.get() : "no");
     }
 

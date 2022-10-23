@@ -3,6 +3,7 @@ drop table if exists users;
 create table users (
         id          integer primary key autoincrement,
         username    text    unique not null,
+        fullname    text    not null,
         password    text    not null,
         avatar_path text    null,
         created_at  timestamp default current_timestamp not null,
@@ -27,8 +28,6 @@ create table friends (
             on delete cascade
             on update cascade
 );
-
-drop table if exists friend_request_status;
 
 drop table if exists friend_requests;
 

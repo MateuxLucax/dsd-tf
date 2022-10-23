@@ -18,7 +18,7 @@ public class GetAllErrorCodes extends RequestHandler {
 
     public Response run() {
         var codes = new ArrayList<String>();
-        for (var code : ErrCode.values()) {
+        for (var code : MsgCode.values()) {
             codes.add(code.toString());
         }
         return responseFactory.json(codes);

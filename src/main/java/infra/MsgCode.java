@@ -2,7 +2,7 @@ package infra;
 
 import java.util.Optional;
 
-public enum ErrCode {
+public enum MsgCode {
 
     // general
     INTERNAL,
@@ -13,11 +13,12 @@ public enum ErrCode {
     MALFORMED_REQUEST,
     NO_RESPONSE,
 
-    // create-session
+    // create-user
     FAILED_TO_CREATE_USER,
     USERNAME_IN_USE,
+    USER_CREATED_SUCCESSFULLY,
 
-    // create-user
+    // create-session
     INCORRECT_CREDENTIALS,
 
     // search-users
@@ -31,7 +32,7 @@ public enum ErrCode {
     SENT_FRIEND_REQUEST_SUCCESSFULLY,
     ;
 
-    public static Optional<ErrCode> from(String name) {
+    public static Optional<MsgCode> from(String name) {
         for (var code : values())
             if (code.name().equals(name))
                 return Optional.of(code);

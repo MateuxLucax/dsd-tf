@@ -25,7 +25,7 @@ public class SendFriendRequest extends RequestHandler {
             var targetUserId = data.userId;
 
             if (sourceUserId == targetUserId) {
-                throw new ErrorResponse("badRequest", ErrCode.FRIEND_REQUEST_TO_YOURSELF);
+                throw new ErrorResponse("badRequest", MsgCode.FRIEND_REQUEST_TO_YOURSELF);
             }
 
             // check if user exists
@@ -35,7 +35,7 @@ public class SendFriendRequest extends RequestHandler {
                 stmt.setLong(1, data.userId);
                 var res = stmt.executeQuery();
                 if (!res.next()) {
-                    throw new ErrorResponse("badRequest", ErrCode.NO_USER_WITH_GIVEN_ID);
+                    throw new ErrorResponse("badRequest", MsgCode.NO_USER_WITH_GIVEN_ID);
                 }
             }
 
@@ -58,9 +58,9 @@ public class SendFriendRequest extends RequestHandler {
 
                     var token = request.headers().get("token");
                     if (senderId == ctx.sessionManager().getSessionData(token).getUserId()) {
-                        throw new ErrorResponse("badRequest", ErrCode.YOU_ALREADY_SENT_FRIEND_REQUEST);
+                        throw new ErrorResponse("badRequest", MsgCode.YOU_ALREADY_SENT_FRIEND_REQUEST);
                     } else {
-                        throw new ErrorResponse("badRequest", ErrCode.THEY_ALREADY_SENT_FRIEND_REQUEST);
+                        throw new ErrorResponse("badRequest", MsgCode.THEY_ALREADY_SENT_FRIEND_REQUEST);
                     }
                 }
             }
@@ -73,12 +73,12 @@ public class SendFriendRequest extends RequestHandler {
                 stmt.setLong(2, targetUserId);
                 var n = stmt.executeUpdate();
                 if (n != 1) {
-                    throw new ErrorResponse("internal", ErrCode.FAILED_TO_SEND_FRIEND_REQUEST);
+                    throw new ErrorResponse("internal", MsgCode.FAILED_TO_SEND_FRIEND_REQUEST);
                 }
             }
 
             conn.commit();
-            return responseFactory.json(MessageCodeBody.from(ErrCode.SENT_FRIEND_REQUEST_SUCCESSFULLY));
+            return responseFactory.json(MessageCodeBody.from(MsgCode.SENT_FRIEND_REQUEST_SUCCESSFULLY));
 
         } catch (ErrorResponse e) {
             conn.rollback();

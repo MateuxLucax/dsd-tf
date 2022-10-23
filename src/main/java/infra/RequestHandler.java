@@ -23,7 +23,7 @@ public abstract class RequestHandler {
             var body = new String(request.body());
             return ctx.gson().fromJson(body, C);
         } catch (JsonSyntaxException e) {
-            throw new ErrorResponse("internal", ErrCode.FAILED_TO_PARSE_JSON);
+            throw new ErrorResponse("internal", MsgCode.FAILED_TO_PARSE_JSON);
         }
     }
 

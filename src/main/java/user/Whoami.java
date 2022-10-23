@@ -11,7 +11,7 @@ public class Whoami extends RequestHandler {
         super(request, ctx);
     }
 
-    private record UserData(String username, Timestamp createdAt, Timestamp updatedAt) {}
+    private record UserData(String username, String fullname, Timestamp createdAt, Timestamp updatedAt) {}
 
     @Override
     public Response run() throws SQLException {
@@ -20,7 +20,7 @@ public class Whoami extends RequestHandler {
         var id = ctx.sessionManager().getSessionData(token).getUserId();
 
         try (var conn = Database.getConnection()) {
-            var stmt = conn.prepareStatement("SELECT username, created_at, updated_at FROM users WHERE id = ?");
+            var stmt = conn.prepareStatement("SELECT username, fullname, created_at, updated_at FROM users WHERE id = ?");
             stmt.setLong(1, id);
             var result = stmt.executeQuery();
             if (!result.next()) {
@@ -29,14 +29,15 @@ public class Whoami extends RequestHandler {
                 //  which btw should be an atomic operation
                 System.err.println("INTERNAL ERROR: ID retrieved from session manager does not exist");
 
-                throw new ErrorResponse("internal", ErrCode.INTERNAL);
+                throw new ErrorResponse("internal", MsgCode.INTERNAL);
             }
 
             var username = result.getString("username");
+            var fullname = result.getString("fullname");
             var createdAt = result.getTimestamp("created_at");
             var updatedAT = result.getTimestamp("updated_at");
 
-            var body = new UserData(username, createdAt, updatedAT);
+            var body = new UserData(username, fullname, createdAt, updatedAT);
             return responseFactory.json(body);
 
         } catch (ErrorResponse e) {

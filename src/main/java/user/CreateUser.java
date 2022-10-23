@@ -10,9 +10,7 @@ public class CreateUser extends RequestHandler {
         super(request, ctx);
     }
 
-    private record RequestBody(String username, String password) {}
-
-    private record ResponseBody(long id) {}
+    private record RequestBody(String username, String password, String fullname) {}
 
     public boolean tokenRequired() {
         return false;
@@ -30,26 +28,20 @@ public class CreateUser extends RequestHandler {
             existsStmt.setString(1, body.username());
             var existsRes = existsStmt.executeQuery();
             if (existsRes.next()) {
-                throw new ErrorResponse("badRequest", ErrCode.USERNAME_IN_USE);
+                throw new ErrorResponse("badRequest", MsgCode.USERNAME_IN_USE);
             }
 
-            var createStmt = conn.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)");
+            var createStmt = conn.prepareStatement("INSERT INTO users (username, password, fullname) VALUES (?, ?, ?)");
             createStmt.setString(1, body.username());
             createStmt.setString(2, body.password());
+            createStmt.setString(3, body.fullname());
             var rowCount = createStmt.executeUpdate();
             if (rowCount == 0) {
-                throw new ErrorResponse("internal", ErrCode.FAILED_TO_CREATE_USER);
+                throw new ErrorResponse("internal", MsgCode.FAILED_TO_CREATE_USER);
             }
-
-            var idStmt = conn.prepareStatement("SELECT MAX(id) AS id FROM users");
-            var idRes = idStmt.executeQuery();
-            if (!idRes.next()) {
-                throw new ErrorResponse("internal", ErrCode.FAILED_TO_CREATE_USER);
-            }
-            var id = idRes.getLong(1);
 
             conn.commit();
-            return responseFactory.json(new ResponseBody(id));
+            return responseFactory.json(MessageCodeBody.from(MsgCode.USER_CREATED_SUCCESSFULLY));
 
         } catch (ErrorResponse e) {
             conn.rollback();

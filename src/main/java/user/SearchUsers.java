@@ -15,7 +15,7 @@ public class SearchUsers extends RequestHandler {
 
     private record RequestData(String search, int page) {}
 
-    private record UserData(int id, String name) {}
+    private record UserData(int id, String username, String fullname) {}
 
     @Override
     public Response run() throws SQLException {
@@ -23,12 +23,14 @@ public class SearchUsers extends RequestHandler {
             var req = readJson(RequestData.class);
 
             if (req.page <= 0) {
-                throw new ErrorResponse("badRequest", ErrCode.INVALID_PAGE_NUMBER);
+                throw new ErrorResponse("badRequest", MsgCode.INVALID_PAGE_NUMBER);
             }
+
+            // TODO test pagination
 
             // TODO return more info: whether is friend, friend request status, etc.
 
-            var sql = "SELECT id, username FROM users WHERE username like ? LIMIT ? OFFSET ?";
+            var sql = "SELECT id, username, fullname FROM users WHERE username like ? LIMIT ? OFFSET ?";
             var stmt = conn.prepareStatement(sql);
 
             // TODO is that the right way to escape a %?
@@ -40,7 +42,10 @@ public class SearchUsers extends RequestHandler {
 
             var users = new ArrayList<UserData>();
             while (res.next()) {
-                var user = new UserData(res.getInt("id"), res.getString("username"));
+                var id = res.getInt("id");
+                var username = res.getString("username");
+                var fullname = res.getString("fullname");
+                var user = new UserData(id, username, fullname);
                 users.add(user);
             }
 

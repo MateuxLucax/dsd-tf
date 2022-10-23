@@ -7,7 +7,7 @@ public class MalformedRequestException extends Exception {
     }
 
     // TODO rework this to work with error code returns
-    //  (currently the extra information in the exception message is thrown away, we just return ErrCode.MALFORMED_REQUEST anyway)
+    //  (currently the extra information in the exception message is thrown away, we just return MsgCode.MALFORMED_REQUEST anyway)
 
     public static MalformedRequestException invalidHeaderFormat(int lineNumber) {
         return new MalformedRequestException("Invalid header format at line " + lineNumber);

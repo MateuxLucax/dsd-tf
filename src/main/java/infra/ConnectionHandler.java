@@ -39,7 +39,7 @@ public class ConnectionHandler extends Thread {
                     var maybeHandler = OperationLookup.get(operation);
 
                     if (maybeHandler.isEmpty()) {
-                        responseToWrite = Optional.of(factory.err("badRequest", ErrCode.UNKNOWN_OPERATION));
+                        responseToWrite = Optional.of(factory.err("badRequest", MsgCode.UNKNOWN_OPERATION));
                     } else {
                         var handler = maybeHandler.get().constructor(req, ctx);
 
@@ -55,7 +55,7 @@ public class ConnectionHandler extends Thread {
                             }
 
                             if (!mgr.hasSession(token)) {
-                                responseToWrite = Optional.of(factory.err("badRequest", ErrCode.TOKEN_EXPIRED));
+                                responseToWrite = Optional.of(factory.err("badRequest", MsgCode.TOKEN_EXPIRED));
                             }
                         }
 
@@ -63,13 +63,13 @@ public class ConnectionHandler extends Thread {
                     }
 
                 } catch (IOException | SQLException e) {
-                    responseToWrite = Optional.of(factory.err("internal", ErrCode.INTERNAL));
+                    responseToWrite = Optional.of(factory.err("internal", MsgCode.INTERNAL));
                     e.printStackTrace();
                 } catch (MalformedRequestException e) {
-                    responseToWrite = Optional.of(factory.err("badRequest", ErrCode.MALFORMED_REQUEST));
+                    responseToWrite = Optional.of(factory.err("badRequest", MsgCode.MALFORMED_REQUEST));
                 } finally {
 
-                    responseToWrite.orElse(factory.err("internal", ErrCode.NO_RESPONSE)).writeTo(out);
+                    responseToWrite.orElse(factory.err("internal", MsgCode.NO_RESPONSE)).writeTo(out);
                     if (shouldCloseSocket) {
                         socket.close();
                     }

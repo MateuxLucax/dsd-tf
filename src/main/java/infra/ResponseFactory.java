@@ -14,7 +14,7 @@ public class ResponseFactory {
         return new Response(false, e.getKind(), gson.toJson(e.toResponseBody()).getBytes());
     }
 
-    public Response err(String kind, ErrCode code) {
+    public Response err(String kind, MsgCode code) {
         return err(new ErrorResponse(kind, code));
     }
 

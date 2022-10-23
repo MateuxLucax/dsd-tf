@@ -27,17 +27,17 @@ package infra;
 public class ErrorResponse extends Throwable {
 
     private final String kind; // like http status codes
-    private final ErrCode code; // replaces what would be a 'message'
+    private final MsgCode code; // replaces what would be a 'message'
     // client is responsible for translating the code into the appropriate human-readable message
     // possibly in different languages
 
-    public ErrorResponse(String kind, ErrCode code) {
+    public ErrorResponse(String kind, MsgCode code) {
         this.kind = kind;
         this.code = code;
     }
 
     public String getKind() { return kind; }
-    public ErrCode getCode() { return code; }
+    public MsgCode getCode() { return code; }
 
     public MessageCodeBody toResponseBody() { return new MessageCodeBody(code.toString()); }
 }
