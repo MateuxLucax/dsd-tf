@@ -48,6 +48,8 @@ public class CreateUser extends RequestHandler {
             }
             var id = idRes.getLong(1);
 
+            conn.commit();
+
             var responseBody = new ResponseBody(id);
             return responseFactory.json(responseBody);
 

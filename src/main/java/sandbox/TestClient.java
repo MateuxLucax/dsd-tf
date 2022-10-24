@@ -60,8 +60,8 @@ public class TestClient {
         //makeRequest("create-user", body, null);
         var broToken = loginGetToken("bro", "123");
 
-        final var dudeId = 2;
-        final var broId = 3;
+        final var dudeId = 1;
+        final var broId = 2;
 
         // dude send friend request to bro
         body = "{\"userId\": "+broId+"}";
@@ -87,7 +87,8 @@ public class TestClient {
         makeRequest("get-friend-requests", "", dudeToken);
         makeRequest("get-friend-requests", "", broToken);
 
-        // TODO list friends (for both)
+        makeRequest("get-friends", "", dudeToken);
+        makeRequest("get-friends", "", broToken);
     }
 
     public static void main(String[] args) throws IOException {

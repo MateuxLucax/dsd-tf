@@ -2,6 +2,7 @@ package infra;
 
 import friends.FinishFriendRequest;
 import friends.GetFriendRequests;
+import friends.GetFriends;
 import friends.SendFriendRequest;
 import meta.GetAllErrorCodes;
 import meta.GetOperationIndex;
@@ -34,6 +35,7 @@ public class OperationLookup {
         map.put("get-friend-requests", GetFriendRequests::new);
         map.put("send-friend-request", SendFriendRequest::new);
         map.put("finish-friend-request", FinishFriendRequest::new);
+        map.put("get-friends", GetFriends::new);
     }
 
     public static Collection<String> names() {

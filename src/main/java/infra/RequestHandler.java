@@ -18,6 +18,14 @@ public abstract class RequestHandler {
         this.responseFactory = ctx.responseFactory();
     }
 
+    public String getToken() {
+        return request.headers().get("token");
+    }
+
+    public long getUserId() {
+        return ctx.sessionManager().getSessionData(getToken()).getUserId();
+    }
+
     public <T> T readJson(Class<T> C) throws ErrorResponse {
         try {
             var body = new String(request.body());

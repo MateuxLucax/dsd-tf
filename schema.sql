@@ -15,16 +15,16 @@ create table users (
 drop table if exists friends;
 
 create table friends (
-        friend1_id integer not null,
-        friend2_id integer not null,
+        your_id    integer not null,
+        their_id   integer not null,
         created_at timestamp default current_timestamp not null,
 
-        primary key (friend1_id, friend2_id),
+        primary key (your_id, their_id),
 
-        foreign key (friend1_id) references users(id)
+        foreign key (your_id) references users(id)
             on delete cascade
             on update cascade,
-        foreign key (friend2_id) references users(id)
+        foreign key (their_id) references users(id)
             on delete cascade
             on update cascade
 );

@@ -30,8 +30,7 @@ public class FinishFriendRequest extends RequestHandler {
             var senderId = requestBody.senderId();
             var accepted = requestBody.accepted();
 
-            var token = request.headers().get("token");
-            var receiverId = ctx.sessionManager().getSessionData(token).getUserId();
+            var receiverId = getUserId();
 
             if (senderId == receiverId) {
                 throw new ErrorResponse("badRequest", MsgCode.FRIEND_REQUEST_TO_YOURSELF);
@@ -54,12 +53,15 @@ public class FinishFriendRequest extends RequestHandler {
 
             if (accepted) {
                 var sql =
-                    "INSERT INTO friends (friend1_id, friend2_id, created_at) " +
-                    "VALUES (?, ?, ?)";
+                    "INSERT INTO friends (your_id, their_id, created_at) " +
+                    "VALUES (?, ?, ?), (?, ?, ?)"; // insert both (a,b) and (b,a)
                 var statement = connection.prepareStatement(sql);
                 statement.setLong(1, senderId);
                 statement.setLong(2, receiverId);
                 statement.setTimestamp(3, Timestamp.from(Instant.now()));
+                statement.setLong(4, receiverId);
+                statement.setLong(5, senderId);
+                statement.setTimestamp(6, Timestamp.from(Instant.now()));
                 int numInserted = statement.executeUpdate();
                 if (numInserted == 0) {
                     throw new ErrorResponse("internal", MsgCode.FAILED_TO_FINISH_FRIEND_REQUEST);
@@ -72,8 +74,9 @@ public class FinishFriendRequest extends RequestHandler {
 
         } catch (ErrorResponse e) {
             connection.rollback();
-            connection.close();
             return responseFactory.err(e);
+        } finally {
+            connection.close();
         }
     }
 }

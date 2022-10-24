@@ -67,7 +67,9 @@ public class ConnectionHandler extends Thread {
                     responseToWrite = Optional.of(factory.err("badRequest", MsgCode.MALFORMED_REQUEST));
                 } finally {
 
-                    responseToWrite.orElse(factory.err("internal", MsgCode.NO_RESPONSE)).writeTo(out);
+                    responseToWrite
+                        .orElse(factory.err("internal", MsgCode.NO_RESPONSE))
+                        .writeTo(out);
                     if (shouldCloseSocket) {
                         socket.close();
                     }
