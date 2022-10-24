@@ -12,7 +12,7 @@ import java.net.Socket;
 public class TestClient {
 
     public static String makeRequest(String operation, String body, String token) throws IOException {
-        try (var socket = new Socket("localhost", 80)) {
+        try (var socket = new Socket("localhost", 1234)) {
             var request = "";
             request += "operation " + operation + '\n';
             request += "body-size " + body.getBytes().length + '\n';
@@ -89,6 +89,13 @@ public class TestClient {
 
         makeRequest("get-friends", "", dudeToken);
         makeRequest("get-friends", "", broToken);
+
+        // remove friend
+        body = "{\"friendId\": "+broId+"}";
+        makeRequest("remove-friend", body, dudeToken);
+
+        // verify that get-friends is empty
+        makeRequest("get-friends", "", dudeToken);
     }
 
     public static void main(String[] args) throws IOException {

@@ -76,6 +76,10 @@ public class Request {
             var size = Integer.parseInt(headers.get("body-size"));
             if (size < 0) throw MalformedRequestException.invalidHeaderValue("body-size");
 
+            if (size == 0) {
+                return new Request(headers, new byte[]{});
+            }
+
             // could use readNBytes, but this makes debugging easier
             var body = new byte[size];
             var off = 0;

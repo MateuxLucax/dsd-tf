@@ -21,4 +21,8 @@ public class ResponseFactory {
     public Response json(Object o) {
         return new Response(true, "", gson.toJson(o).getBytes());
     }
+
+    public Response justOk() {
+        return new Response(true, "", new byte[]{});
+    }
 }

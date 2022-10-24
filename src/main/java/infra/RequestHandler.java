@@ -29,8 +29,12 @@ public abstract class RequestHandler {
     public <T> T readJson(Class<T> C) throws ErrorResponse {
         try {
             var body = new String(request.body());
-            return ctx.gson().fromJson(body, C);
-        } catch (JsonSyntaxException e) {
+            var json = ctx.gson().fromJson(body, C);
+            if (json == null) {
+                throw new NullPointerException();
+            }
+            return json;
+        } catch (JsonSyntaxException | NullPointerException e) {
             throw new ErrorResponse("internal", MsgCode.FAILED_TO_PARSE_JSON);
         }
     }

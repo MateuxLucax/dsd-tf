@@ -1,11 +1,7 @@
 package infra;
 
-import friends.FinishFriendRequest;
-import friends.GetFriendRequests;
-import friends.GetFriends;
-import friends.SendFriendRequest;
-import meta.GetAllErrorCodes;
-import meta.GetOperationIndex;
+import friends.*;
+import meta.*;
 import user.*;
 
 import java.util.Collection;
@@ -36,6 +32,7 @@ public class OperationLookup {
         map.put("send-friend-request", SendFriendRequest::new);
         map.put("finish-friend-request", FinishFriendRequest::new);
         map.put("get-friends", GetFriends::new);
+        map.put("remove-friend", RemoveFriend::new);
     }
 
     public static Collection<String> names() {
