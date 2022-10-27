@@ -2,6 +2,7 @@ package sandbox;
 
 // Pacote pra escrever coisas só pra testar
 
+import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 
 import java.io.BufferedReader;
@@ -11,13 +12,16 @@ import java.net.Socket;
 
 public class TestClient {
 
-    public static String makeRequest(String operation, String body, String token) throws IOException {
+    public static String makeRequest(String operation, String body, String token, String ...additionalHeaders) throws IOException {
         try (var socket = new Socket("localhost", 1234)) {
             var request = "";
             request += "operation " + operation + '\n';
             request += "body-size " + body.getBytes().length + '\n';
             if (token != null) {
                 request += "token " + token + '\n';
+            }
+            for (var header : additionalHeaders) {
+                request += header + '\n';
             }
             request += "\n";
             request += body;
@@ -41,10 +45,14 @@ public class TestClient {
         }
     }
 
+    public static String getResponseBody(String wholeResponse) {
+        return wholeResponse.split("\n\n")[1];
+    }
+
     public static String loginGetToken(String username, String password) throws IOException {
         var body = "{\"username\": \""+username+"\", \"password\": \""+password+"\"}";
         var response = makeRequest("create-session", body, null);
-        var responseBody = response.split("\n")[3];
+        var responseBody = getResponseBody(response);
         var token = JsonParser.parseString(responseBody).getAsJsonObject().getAsJsonPrimitive("token").getAsString();
         return token;
     }
@@ -98,9 +106,25 @@ public class TestClient {
         makeRequest("get-friends", "", dudeToken);
     }
 
+    public static void testFiles() throws IOException {
+        var token = loginGetToken("bro", "123");
+
+        var fileContents = "hello\nthis is a text file\ngoodbye\n:)";
+        var response = makeRequest("put-file", fileContents, token, "file-extension txt");
+
+        var responseBody = getResponseBody(response);
+        var json = JsonParser.parseString(responseBody);
+        var filename = json.getAsJsonObject().getAsJsonPrimitive("filename").getAsString();
+
+        System.out.println("-- Created file filename: " + filename);
+
+        makeRequest("get-file", "{\"filename\": \""+ filename +"\"}", token);
+    }
+
     public static void main(String[] args) throws IOException {
 
-        testFriendRequests();
+        //testFriendRequests();
+        testFiles();
 
 
         /*

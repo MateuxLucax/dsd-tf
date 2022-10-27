@@ -2,6 +2,8 @@ package infra;
 
 import friends.*;
 import meta.*;
+import uploads.GetFile;
+import uploads.PutFile;
 import user.*;
 
 import java.util.Collection;
@@ -33,6 +35,9 @@ public class OperationLookup {
         map.put("finish-friend-request", FinishFriendRequest::new);
         map.put("get-friends", GetFriends::new);
         map.put("remove-friend", RemoveFriend::new);
+
+        map.put("put-file", PutFile::new);
+        map.put("get-file", GetFile::new);
     }
 
     public static Collection<String> names() {

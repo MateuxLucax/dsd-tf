@@ -34,7 +34,7 @@ public enum MsgCode {
     FRIEND_REQUEST_NOT_FOUND,
     FAILED_TO_FINISH_FRIEND_REQUEST,
     FINISHED_FRIEND_REQUEST_SUCCESSFULLY,
-    ;
+    MISSING_FILE_EXTENSION_HEADER, IO_ERROR, FILE_DOES_NOT_EXISTS;
 
     public static Optional<MsgCode> from(String name) {
         for (var code : values())
