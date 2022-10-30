@@ -3,5 +3,5 @@
 *.db-wal
 target/**
 .idea
-uploads
-!uploads/.gitkeep
+/uploads
+!/uploads/.gitkeep

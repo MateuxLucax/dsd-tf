@@ -2,8 +2,8 @@ package infra;
 
 import friends.*;
 import meta.*;
-import uploads.GetFile;
-import uploads.PutFile;
+import files.GetFile;
+import files.PutFile;
 import user.*;
 
 import java.util.Collection;

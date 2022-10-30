@@ -1,4 +1,4 @@
-package uploads;
+package files;
 
 import infra.*;
 
@@ -47,6 +47,7 @@ public class PutFile extends RequestHandler {
     } catch (ErrorResponse e) {
       return responseFactory.err(e);
     } catch (IOException e) {
+      System.err.println(e);
       return responseFactory.err(new ErrorResponse("internal", MsgCode.IO_ERROR));
     }
   }
