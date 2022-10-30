@@ -23,7 +23,10 @@ public abstract class RequestHandler {
     }
 
     public long getUserId() {
-        return ctx.sessionManager().getSessionData(getToken()).getUserId();
+        var token = getToken();
+        var sessionData = ctx.sessionManager().getSessionData(token);
+        var userId = sessionData.getUserId();
+        return userId;
     }
 
     public <T> T readJson(Class<T> C) throws ErrorResponse {

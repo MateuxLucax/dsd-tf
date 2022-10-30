@@ -7,8 +7,8 @@ import java.util.*;
 
 public class SessionManager {
 
-    public static final Duration SESSION_DURATION = Duration.ofSeconds(10);//Duration.ofHours(1);
-    public static final Duration THREAD_SLEEP = Duration.ofSeconds(4); //Duration.ofMinutes(30); // less than session duration
+    public static final Duration SESSION_DURATION = Duration.ofHours(1);
+    public static final Duration THREAD_SLEEP = Duration.ofMinutes(30); // less than session duration
 
     private static final Random random = new Random();
     private static final int TOKEN_LENGTH = 64;

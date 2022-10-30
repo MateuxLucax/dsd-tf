@@ -27,15 +27,17 @@ public class CreateSession extends RequestHandler {
 
             var body = readJson(RequestBody.class);
 
-            var stmt = conn.prepareStatement(
+            var sql =
                 "SELECT id, fullname "+
                 "FROM users "+
-                "WHERE username = ? AND password = ?"
-            );
+                "WHERE username = ? AND password = ?";
+            var stmt = conn.prepareStatement(sql);
             stmt.setString(1, body.username);
             stmt.setString(2, body.password);
+
             var result = stmt.executeQuery();
-            if (!result.next()) {
+            var hasResult = result.next();
+            if (!hasResult) {
                 throw new ErrorResponse("badRequest", MsgCode.INCORRECT_CREDENTIALS);
             }
             var id = result.getLong("id");

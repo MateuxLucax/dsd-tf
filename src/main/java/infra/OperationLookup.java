@@ -26,6 +26,7 @@ public class OperationLookup {
         map.put("get-index", GetOperationIndex::new);
 
         map.put("create-user", CreateUser::new);
+        map.put("edit-user", EditUser::new);
         map.put("create-session", CreateSession::new);
         map.put("whoami", Whoami::new);
         map.put("search-users", SearchUsers::new);
