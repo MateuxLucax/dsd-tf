@@ -11,9 +11,10 @@ public class SharedContext {
     private final ResponseFactory resFac;
 
     public SharedContext() {
-        var gsonb = new GsonBuilder();
-        gsonb.registerTypeAdapterFactory(new RecordTypeAdapterFactory());
-        this.gson = gsonb.create();
+        this.gson = new GsonBuilder()
+            .registerTypeAdapterFactory(new RecordTypeAdapterFactory())
+            .setPrettyPrinting()
+            .create();
 
         this.resFac = new ResponseFactory(gson);
 

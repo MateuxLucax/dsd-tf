@@ -70,6 +70,8 @@ public class TestClient {
         final var dudeId = 1;
         final var broId = 2;
 
+        final var searchBody = "{\"search\": \"\", \"page\": 1}";
+
         // dude send friend request to bro
         body = "{\"userId\": "+broId+"}";
         makeRequest("send-friend-request", body, dudeToken);
@@ -81,6 +83,10 @@ public class TestClient {
         // sends again, should return an error
         body = "{\"userId\": "+broId+"}";
         makeRequest("send-friend-request", body, dudeToken);
+
+        // also check search-users, it needs to show that a friend request has been sent
+        makeRequest("search-users", searchBody, dudeToken);
+        makeRequest("search-users", searchBody, broToken);
 
         // bro accepts the request
         body = "{\"senderId\": "+dudeId+", \"accepted\": true}";
@@ -97,12 +103,20 @@ public class TestClient {
         makeRequest("get-friends", "", dudeToken);
         makeRequest("get-friends", "", broToken);
 
+        // also check search-users, it needs to show that they're friends
+        makeRequest("search-users", searchBody, dudeToken);
+        makeRequest("search-users", searchBody, broToken);
+
         // remove friend
         body = "{\"friendId\": "+broId+"}";
         makeRequest("remove-friend", body, dudeToken);
 
         // verify that get-friends is empty
         makeRequest("get-friends", "", dudeToken);
+
+        // again, check search-users
+        makeRequest("search-users", searchBody, dudeToken);
+        makeRequest("search-users", searchBody, broToken);
     }
 
     public static void testFiles() throws IOException {
@@ -122,8 +136,8 @@ public class TestClient {
 
     public static void main(String[] args) throws IOException {
 
-        //testFriendRequests();
-        testFiles();
+        testFriendRequests();
+        //testFiles();
 
 
         /*

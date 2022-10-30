@@ -23,6 +23,7 @@ public abstract class RequestHandler {
     }
 
     public long getUserId() {
+        // TODO throw ErrorResponse when sessionData is null with MsgCode.TOKEN_EXPIRED
         var token = getToken();
         var sessionData = ctx.sessionManager().getSessionData(token);
         var userId = sessionData.getUserId();
