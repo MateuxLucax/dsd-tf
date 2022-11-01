@@ -70,7 +70,7 @@ public class TestClient {
         final var dudeId = 1;
         final var broId = 2;
 
-        final var searchBody = "{\"search\": \"\", \"page\": 1}";
+        final var searchBody = "{\"query\": \"\", \"page\": 1}";
 
         // dude send friend request to bro
         body = "{\"userId\": "+broId+"}";

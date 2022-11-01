@@ -13,7 +13,7 @@ public class SearchUsers extends RequestHandler {
 
     private static final int RESULTS_PER_PAGE = 20;
 
-    private record RequestData(String search, int page) {}
+    private record RequestData(String query, int page) {}
 
     private record UserData(
         long id,
@@ -30,8 +30,6 @@ public class SearchUsers extends RequestHandler {
             if (req.page <= 0) {
                 throw new ErrorResponse("badRequest", MsgCode.INVALID_PAGE_NUMBER);
             }
-
-            // TODO test pagination
 
             var userId = getUserId();
 
@@ -67,7 +65,7 @@ public class SearchUsers extends RequestHandler {
             stmt.setLong(i++, userId); // friend_requests.sender_id
             stmt.setLong(i++, userId); // friend_requests.receiver_id
 
-            stmt.setString(i++, "%" + req.search.replace("%", "\\%") + "%");
+            stmt.setString(i++, "%" + req.query.replace("%", "\\%") + "%");
             stmt.setLong(i++, userId);
             stmt.setInt(i++, RESULTS_PER_PAGE);
             stmt.setInt(i++, (req.page - 1) * RESULTS_PER_PAGE);
