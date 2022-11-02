@@ -21,7 +21,7 @@ public class SendFriendRequest extends RequestHandler {
 
             var data = readJson(RequestData.class);
 
-            var sourceUserId = ctx.sessionManager().getSessionData( request.headers().get("token") ).getUserId();
+            var sourceUserId = getUserId();
             var targetUserId = data.userId;
 
             if (sourceUserId == targetUserId) {
@@ -65,11 +65,23 @@ public class SendFriendRequest extends RequestHandler {
                 }
             }
 
-            // TODO verify they aren't already friends
+            // verify they aren't already friends
+            {
+                var sql = "SELECT 1 FROM friends WHERE (your_id, their_id) = (?, ?) OR (your_id, their_id) = (?, ?)";
+                var stmt = conn.prepareStatement(sql);
+                stmt.setLong(1, sourceUserId); stmt.setLong(2, targetUserId);
+                stmt.setLong(3, targetUserId); stmt.setLong(4, sourceUserId);
+                var result = stmt.executeQuery();
+                if (result.next()) {
+                    throw new ErrorResponse("badRequest", MsgCode.ALREADY_FRIENDS);
+                }
+            }
 
             // finally send the request
             {
-                var sql = "INSERT INTO friend_requests (sender_id, receiver_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)";
+                var sql =
+                    "INSERT INTO friend_requests (sender_id, receiver_id, created_at) VALUES " +
+                    "(?, ?, CURRENT_TIMESTAMP)";
                 var stmt = conn.prepareStatement(sql);
                 stmt.setLong(1, sourceUserId);
                 stmt.setLong(2, targetUserId);
