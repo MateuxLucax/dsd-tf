@@ -30,6 +30,7 @@ public class OperationLookup {
         map.put("create-session", CreateSession::new);
         map.put("whoami", Whoami::new);
         map.put("search-users", SearchUsers::new);
+        map.put("end-session", EndSession::new);
 
         map.put("get-friend-requests", GetFriendRequests::new);
         map.put("send-friend-request", SendFriendRequest::new);
