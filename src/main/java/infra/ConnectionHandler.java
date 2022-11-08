@@ -57,7 +57,9 @@ public class ConnectionHandler extends Thread {
                             }
                         }
 
-                        responseToWrite = Optional.of(handler.run());
+                        if (responseToWrite.isEmpty()) {
+                            responseToWrite = Optional.of(handler.run());
+                        }
                     }
 
                 } catch (IOException | SQLException e) {
@@ -70,6 +72,7 @@ public class ConnectionHandler extends Thread {
                     responseToWrite
                         .orElse(factory.err("internal", MsgCode.NO_RESPONSE))
                         .writeTo(out);
+
                     if (shouldCloseSocket) {
                         socket.close();
                     }

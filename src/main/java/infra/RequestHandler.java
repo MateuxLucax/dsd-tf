@@ -22,12 +22,13 @@ public abstract class RequestHandler {
         return request.headers().get("token");
     }
 
-    public long getUserId() {
-        // TODO throw ErrorResponse when sessionData is null with MsgCode.TOKEN_EXPIRED
+    public long getUserId() throws ErrorResponse {
         var token = getToken();
         var sessionData = ctx.sessionManager().getSessionData(token);
-        var userId = sessionData.getUserId();
-        return userId;
+        if (sessionData == null) {
+            throw new ErrorResponse("badRequest", MsgCode.TOKEN_EXPIRED);
+        }
+        return sessionData.getUserId();
     }
 
     public <T> T readJson(Class<T> C) throws ErrorResponse {

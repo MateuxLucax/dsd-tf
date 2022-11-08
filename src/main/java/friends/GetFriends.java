@@ -37,6 +37,8 @@ public class GetFriends extends RequestHandler {
             }
 
             return responseFactory.json(friends);
+        } catch (ErrorResponse e) {
+            return responseFactory.err(e);
         }
     }
 }
