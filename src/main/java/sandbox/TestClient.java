@@ -134,21 +134,31 @@ public class TestClient {
         makeRequest("get-file", "{\"filename\": \""+ filename +"\"}", token);
     }
 
+    public static void testTokenExpired() throws IOException {
+        String body;
+        var token = loginGetToken("bro", "123");
+        makeRequest("search-users", "{\"query\": \"\", \"page\": 1}", token);
+        makeRequest("end-session", "", token);
+        // token expired
+        makeRequest("search-users", "{\"query\": \"\", \"page\": 1}", token);
+    }
+
+    public static void testSendMessage() throws IOException {
+        String body;
+        var token = loginGetToken("dude", "123");
+        body = "{\"to\": 2, \"textContents\": \"hello how are you\"}";
+        makeRequest("send-message", body, token);
+        body = "{\"to\": 2, \"textContents\": \"hello how are you again\"}";
+        makeRequest("send-message", body, token);
+        body = "{\"to\": 2, \"fileReference\": \"uuid.txt\"}";
+        makeRequest("send-message", body, token);
+    }
+
     public static void main(String[] args) throws IOException {
 
         //testFriendRequests();
         //testFiles();
-
-        String body;
-
-        var token = loginGetToken("bro", "123");
-
-        makeRequest("search-users", "{\"query\": \"\", \"page\": 1}", token);
-
-        makeRequest("end-session", "", token);
-
-        // token expired
-        makeRequest("search-users", "{\"query\": \"\", \"page\": 1}", token);
+        testSendMessage();
 
         /*
         String body;

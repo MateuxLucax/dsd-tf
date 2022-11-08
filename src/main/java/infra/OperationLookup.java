@@ -1,6 +1,7 @@
 package infra;
 
 import friends.*;
+import messages.SendMessage;
 import meta.*;
 import files.GetFile;
 import files.PutFile;
@@ -40,6 +41,8 @@ public class OperationLookup {
 
         map.put("put-file", PutFile::new);
         map.put("get-file", GetFile::new);
+
+        map.put("send-message", SendMessage::new);
     }
 
     public static Collection<String> names() {
