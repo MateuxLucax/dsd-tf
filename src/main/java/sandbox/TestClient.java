@@ -143,22 +143,47 @@ public class TestClient {
         makeRequest("search-users", "{\"query\": \"\", \"page\": 1}", token);
     }
 
-    public static void testSendMessage() throws IOException {
-        String body;
-        var token = loginGetToken("dude", "123");
-        body = "{\"to\": 2, \"textContents\": \"hello how are you\"}";
-        makeRequest("send-message", body, token);
-        body = "{\"to\": 2, \"textContents\": \"hello how are you again\"}";
-        makeRequest("send-message", body, token);
-        body = "{\"to\": 2, \"fileReference\": \"uuid.txt\"}";
-        makeRequest("send-message", body, token);
+    public static String txtmsg(int to, String text) {
+        return String.format("{\"to\": %d, \"textContents\": \"%s\"}", to, text);
+    }
+    public static String filemsg(int to, String ref) {
+        return String.format("{\"to\": %d, \"fileReference\": \"%s\"}", to, ref);
+    }
+
+    public static void makeConversation() throws IOException {
+        var tokbro = loginGetToken("bro", "444");
+        var tokdud = loginGetToken("dude", "123");
+
+        var idbro = 2;
+        var iddud = 1;
+
+        makeRequest("send-message", txtmsg(idbro, "hey"), tokdud);
+        makeRequest("send-message", txtmsg(idbro, "HEY"), tokdud);
+        makeRequest("send-message", txtmsg(iddud, "what"), tokbro);
+        makeRequest("send-message", txtmsg(idbro, "how much is 2+2"), tokdud);
+        makeRequest("send-message", txtmsg(iddud, "idk math is rard"), tokbro);
+        makeRequest("send-message", txtmsg(idbro, "english too it seems"), tokdud);
+        makeRequest("send-message", txtmsg(iddud, "idk wha t yo'rue talking about"), tokbro);
+        makeRequest("send-message", txtmsg(idbro, "forget it"), tokdud);
+    }
+
+    public static String getmsg(int userId, int before, int limit) {
+        return String.format("{\"friendId\": %d, \"before\": %d, \"limit\": %d}", userId, before, limit);
+    }
+    public static void testGetMessages() throws IOException {
+        var tok = loginGetToken("bro", "444");
+        makeRequest("get-messages", getmsg(1, 0, 3), tok);
+        makeRequest("get-messages", getmsg(1, 17, 3), tok);
+        makeRequest("get-messages", getmsg(1, 14, 3), tok);
     }
 
     public static void main(String[] args) throws IOException {
 
         //testFriendRequests();
         //testFiles();
-        testSendMessage();
+        //testSendMessage();
+        //makeConversation();
+        testGetMessages();
 
         /*
         String body;

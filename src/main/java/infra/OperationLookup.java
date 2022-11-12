@@ -1,10 +1,9 @@
 package infra;
 
 import friends.*;
-import messages.SendMessage;
+import messages.*;
 import meta.*;
-import files.GetFile;
-import files.PutFile;
+import files.*;
 import user.*;
 
 import java.util.Collection;
@@ -43,6 +42,7 @@ public class OperationLookup {
         map.put("get-file", GetFile::new);
 
         map.put("send-message", SendMessage::new);
+        map.put("get-messages", GetMessages::new);
     }
 
     public static Collection<String> names() {

@@ -43,9 +43,21 @@ public class SendMessage extends RequestHandler {
 
             var senderId = getUserId();
             var receiverId = data.to;
-            var sentAt = Instant.now();
 
-            // TODO block sending messages to non-friends (?)
+            // block sending messages to non-friends
+            {
+                var sql = "SELECT 1 FROM friends WHERE your_id = ? AND their_id = ?";
+                var stmt = connection.prepareStatement(sql);
+                stmt.setLong(1, senderId);
+                stmt.setLong(2, receiverId);
+                var result = stmt.executeQuery();
+                if (!result.next()) {
+                    throw new ErrorResponse("badRequest", MsgCode.NOT_FRIENDS);
+                }
+            }
+
+
+            var sentAt = Instant.now();
 
             {
                 var sql = "INSERT INTO messages (sender_id, receiver_id, text_contents, file_reference, sent_at) VALUES (?, ?, ?, ?, ?)";
