@@ -1,5 +1,6 @@
 package user;
 
+import infra.SharedContext;
 import infra.request.*;
 
 import java.sql.SQLException;

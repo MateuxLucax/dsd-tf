@@ -1,5 +1,6 @@
 package meta;
 
+import infra.SharedContext;
 import infra.request.*;
 
 import java.sql.SQLException;

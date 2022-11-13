@@ -1,5 +1,6 @@
 package files;
 
+import infra.SharedContext;
 import infra.request.*;
 
 import java.io.File;

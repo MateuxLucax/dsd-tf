@@ -1,6 +1,7 @@
 package infra.request;
 
 import com.google.gson.JsonSyntaxException;
+import infra.SharedContext;
 
 import java.sql.SQLException;
 

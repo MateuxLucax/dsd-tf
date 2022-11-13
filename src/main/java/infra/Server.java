@@ -1,6 +1,5 @@
 package infra;
 
-import infra.request.SharedContext;
 import infra.session.SessionCleaner;
 import infra.session.SessionManager;
 

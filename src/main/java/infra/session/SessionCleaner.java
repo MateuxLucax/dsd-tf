@@ -12,20 +12,12 @@ public class SessionCleaner extends Thread {
         this.sleepDuration = sleepDuration;
     }
 
-    public void cleanSessions() {
-        var toRemove = new ArrayList<SessionData>();
-        for (var session : mgr.allSessions())
-            if (session.isExpired())
-                toRemove.add(session);
-        toRemove.forEach(mgr::removeSession);
-    }
-
     @Override
     public void run() {
         try {
             while (!isInterrupted()) {
                 Thread.sleep(sleepDuration);
-                cleanSessions();
+                this.mgr.cleanExpiredSessions();
             }
         } catch (InterruptedException e) {
             System.err.println("SessionCleaner interrupted!");

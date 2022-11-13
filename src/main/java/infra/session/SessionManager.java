@@ -1,6 +1,8 @@
 package infra.session;
 
-// TODO make thread-safe (Random already is thread-safe)
+
+// Cannot create sessions while expired sessions are being cleaned
+// Inefficient, scales badly, but it sure works correctly
 
 import java.time.Duration;
 import java.util.*;
@@ -30,6 +32,7 @@ public class SessionManager {
             .toString();
     }
 
+    private final Object lock = new Object();
 
     private final Map<String, SessionData> tokenToSession;
     private final Map<Long, List<String>> idToTokenList;
@@ -39,39 +42,50 @@ public class SessionManager {
         idToTokenList = new HashMap<>();
     }
 
-    public synchronized Collection<SessionData> allSessions() {
-        return tokenToSession.values();
+    public void cleanExpiredSessions() {
+        synchronized (lock) {
+            var toRemove = new ArrayList<SessionData>();
+            for (var session : tokenToSession.values()) {
+                if (session.isExpired()) {
+                    toRemove.add(session);
+                }
+            }
+            for (var session : toRemove) {
+                // remove the session
+                var token = session.getToken();
+                tokenToSession.remove(token);
+                var userId = session.getUserId();
+                var tokenList = idToTokenList.get(userId);
+                if (tokenList != null) {
+                    tokenList.remove(token);
+                }
+            }
+        }
     }
 
-    public synchronized String createSession(long id) {
-        var token = "";
-        do {
-            token = makeToken();
-        } while (tokenToSession.get(token) != null);
+    public String createSession(long id) {
+        synchronized (lock) {
+            var token = "";
+            do {
+                token = makeToken();
+            } while (tokenToSession.get(token) != null);
 
-        var data = new SessionData(token, id);
-        tokenToSession.put(token, data);
+            var data = new SessionData(token, id);
+            tokenToSession.put(token, data);
 
-        idToTokenList
+            idToTokenList
             .computeIfAbsent(id, k -> new ArrayList<String>())
             .add(token);
 
-        return token;
+            return token;
+        }
     }
 
-    public synchronized boolean hasSession(String token) {
+    public boolean hasSession(String token) {
         return tokenToSession.containsKey(token);
     }
 
-    public synchronized SessionData getSessionData(String token) {
+    public SessionData getSessionData(String token) {
         return tokenToSession.get(token);
-    }
-
-    public synchronized void removeSession(SessionData session) {
-        var token = session.getToken();
-        tokenToSession.remove(token);
-        var userId = session.getUserId();
-        var tokenList = idToTokenList.get(userId);
-        if (tokenList != null) tokenList.remove(token);
     }
 }

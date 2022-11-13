@@ -1,6 +1,7 @@
 package infra.request;
 
 import friends.*;
+import infra.SharedContext;
 import messages.*;
 import meta.*;
 import files.*;

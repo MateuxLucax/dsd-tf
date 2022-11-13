@@ -4,7 +4,7 @@ import infra.*;
 import infra.request.Request;
 import infra.request.RequestHandler;
 import infra.request.Response;
-import infra.request.SharedContext;
+import infra.SharedContext;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
