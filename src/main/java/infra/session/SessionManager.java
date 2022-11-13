@@ -82,10 +82,14 @@ public class SessionManager {
     }
 
     public boolean hasSession(String token) {
-        return tokenToSession.containsKey(token);
+        synchronized (lock) {
+            return tokenToSession.containsKey(token);
+        }
     }
 
     public SessionData getSessionData(String token) {
-        return tokenToSession.get(token);
+        synchronized (lock) {
+            return tokenToSession.get(token);
+        }
     }
 }
