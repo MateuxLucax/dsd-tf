@@ -13,7 +13,7 @@ public class RemoveFriend extends RequestHandler {
     super(request, ctx);
   }
 
-  public Response run() throws SQLException {
+  public Response run() throws SQLException, InterruptedException {
     try (var conn = Database.getConnection()) {
       var userId = getUserId();
 

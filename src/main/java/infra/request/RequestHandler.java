@@ -3,15 +3,17 @@ package infra.request;
 import com.google.gson.JsonSyntaxException;
 import infra.SharedContext;
 
+import java.net.Socket;
 import java.sql.SQLException;
 
 public abstract class RequestHandler {
 
+    private Socket socket;
     protected final Request request;
     protected final SharedContext ctx;
 
     protected final ResponseFactory responseFactory;
-    // shortcut for ctx.responseFactory(), will always be used in every request handler
+    // shortcut for ctx.responseFactory(), will be used in most request handlers
 
     public RequestHandler(Request request, SharedContext ctx) {
         this.request = request;
@@ -19,11 +21,19 @@ public abstract class RequestHandler {
         this.responseFactory = ctx.responseFactory();
     }
 
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
+
+    public Socket getSocket() {
+        return this.socket;
+    }
+
     public String getToken() {
         return request.headers().get("token");
     }
 
-    public long getUserId() throws ErrorResponse {
+    public long getUserId() throws ErrorResponse, InterruptedException {
         var token = getToken();
         var sessionData = ctx.sessionManager().getSessionData(token);
         if (sessionData == null) {
@@ -45,7 +55,7 @@ public abstract class RequestHandler {
         }
     }
 
-    public abstract Response run() throws SQLException;
+    public abstract Response run() throws SQLException, InterruptedException;
 
     // true by default, handlers that do not require it need to override
     public boolean tokenRequired() {

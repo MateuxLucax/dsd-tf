@@ -24,7 +24,7 @@ public class SearchUsers extends RequestHandler {
     ) {}
 
     @Override
-    public Response run() throws SQLException {
+    public Response run() throws SQLException, InterruptedException {
         try (var conn = Database.getConnection()) {
             var req = readJson(RequestData.class);
 

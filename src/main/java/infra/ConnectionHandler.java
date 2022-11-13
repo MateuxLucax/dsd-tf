@@ -44,6 +44,8 @@ public class ConnectionHandler extends Thread {
                     } else {
                         var handler = maybeHandler.get().constructor(req, ctx);
 
+                        handler.setSocket(socket);
+
                         if (handler.tokenRequired()) {
                             if (!headers.containsKey("token")) {
                                 throw MalformedRequestException.missingHeader("token");
@@ -67,7 +69,7 @@ public class ConnectionHandler extends Thread {
                         shouldCloseSocket = !handler.keepSocketOpen();
                     }
 
-                } catch (IOException | SQLException e) {
+                } catch (IOException | SQLException | InterruptedException e) {
                     responseToWrite = Optional.of(factory.err("internal", MsgCode.INTERNAL));
                     e.printStackTrace();
                 } catch (MalformedRequestException e) {

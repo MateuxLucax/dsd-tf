@@ -1,6 +1,7 @@
 package friends;
 
 import infra.*;
+import infra.request.ErrorResponse;
 import infra.request.Request;
 import infra.request.RequestHandler;
 import infra.request.Response;
@@ -23,12 +24,11 @@ public class GetFriendRequests extends RequestHandler {
     private record FriendRequestData(UserData from, UserData to, String createdAt, String updatedAt) {}
 
     @Override
-    public Response run() throws SQLException {
+    public Response run() throws SQLException, InterruptedException {
 
         try (var conn = Database.getConnection()) {
 
-            var session = ctx.sessionManager().getSessionData(request.headers().get("token"));
-            var userId = session.getUserId();
+            var userId = getUserId();
 
             var sql =
                 "SELECT fr.created_at" +
@@ -79,6 +79,8 @@ public class GetFriendRequests extends RequestHandler {
             }
 
             return responseFactory.json(friendRequestList);
+        } catch (ErrorResponse e) {
+            return responseFactory.err(e);
         }
     }
 }

@@ -26,7 +26,7 @@ public class GetMessages extends RequestHandler {
         String fileReference
     ) {}
 
-    public Response run() throws SQLException {
+    public Response run() throws SQLException, InterruptedException {
         try (var connection = Database.getConnection()) {
 
             var reqdata = readJson(RequestData.class);

@@ -14,7 +14,7 @@ public class SendFriendRequest extends RequestHandler {
     public record RequestData(long userId) {}
 
     @Override
-    public Response run() throws SQLException {
+    public Response run() throws SQLException, InterruptedException {
 
         var conn = Database.getConnection();
         try {
@@ -58,7 +58,7 @@ public class SendFriendRequest extends RequestHandler {
                     var senderId = res.getLong("sender_id");
 
                     var token = request.headers().get("token");
-                    if (senderId == ctx.sessionManager().getSessionData(token).getUserId()) {
+                    if (senderId == getUserId()) {
                         throw new ErrorResponse("badRequest", MsgCode.YOU_ALREADY_SENT_FRIEND_REQUEST);
                     } else {
                         throw new ErrorResponse("badRequest", MsgCode.THEY_ALREADY_SENT_FRIEND_REQUEST);

@@ -6,6 +6,7 @@ package infra.session;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class SessionManager {
 
@@ -32,64 +33,79 @@ public class SessionManager {
             .toString();
     }
 
-    private final Object lock = new Object();
+    private final Semaphore sema;
 
     private final Map<String, SessionData> tokenToSession;
     private final Map<Long, List<String>> idToTokenList;
 
     public SessionManager() {
+        var fair = true;
+        sema = new Semaphore(1, fair);
+
         tokenToSession = new HashMap<>();
         idToTokenList = new HashMap<>();
     }
 
-    public void cleanExpiredSessions() {
-        synchronized (lock) {
-            var toRemove = new ArrayList<SessionData>();
-            for (var session : tokenToSession.values()) {
-                if (session.isExpired()) {
-                    toRemove.add(session);
-                }
-            }
-            for (var session : toRemove) {
-                // remove the session
-                var token = session.getToken();
-                tokenToSession.remove(token);
-                var userId = session.getUserId();
-                var tokenList = idToTokenList.get(userId);
-                if (tokenList != null) {
-                    tokenList.remove(token);
-                }
+    public void cleanExpiredSessions() throws InterruptedException {
+        sema.acquire();
+        var toRemove = new ArrayList<SessionData>();
+        for (var session : tokenToSession.values()) {
+            if (session.isExpired()) {
+                toRemove.add(session);
             }
         }
+        for (var session : toRemove) {
+            removeSessionImpl(session);
+        }
+        sema.release();
     }
 
-    public String createSession(long id) {
-        synchronized (lock) {
-            var token = "";
-            do {
-                token = makeToken();
-            } while (tokenToSession.get(token) != null);
+    public String createSession(long id) throws InterruptedException {
+        sema.acquire();
+        var token = "";
+        do {
+            token = makeToken();
+        } while (tokenToSession.get(token) != null);
 
-            var data = new SessionData(token, id);
-            tokenToSession.put(token, data);
+        var data = new SessionData(token, id);
+        tokenToSession.put(token, data);
 
-            idToTokenList
-            .computeIfAbsent(id, k -> new ArrayList<String>())
-            .add(token);
+        idToTokenList
+        .computeIfAbsent(id, k -> new ArrayList<String>())
+        .add(token);
 
-            return token;
+        sema.release();
+
+        return token;
+    }
+
+    public boolean hasSession(String token) throws InterruptedException {
+        sema.acquire();
+        var has = tokenToSession.containsKey(token);
+        sema.release();
+        return has;
+    }
+
+    public SessionData getSessionData(String token) throws InterruptedException {
+        sema.acquire();
+        var data = tokenToSession.get(token);
+        sema.release();
+        return data;
+    }
+
+    private void removeSessionImpl(SessionData session) {
+        var token = session.getToken();
+        tokenToSession.remove(token);
+        var userId = session.getUserId();
+        var tokenList = idToTokenList.get(userId);
+        if (tokenList != null) {
+            tokenList.remove(token);
         }
     }
 
-    public boolean hasSession(String token) {
-        synchronized (lock) {
-            return tokenToSession.containsKey(token);
-        }
-    }
-
-    public SessionData getSessionData(String token) {
-        synchronized (lock) {
-            return tokenToSession.get(token);
-        }
+    public void removeSession(SessionData session) throws InterruptedException {
+        sema.acquire();
+        removeSessionImpl(session);
+        sema.release();
     }
 }
