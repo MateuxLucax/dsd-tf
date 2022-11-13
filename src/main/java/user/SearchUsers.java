@@ -1,6 +1,7 @@
 package user;
 
 import infra.*;
+import infra.request.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

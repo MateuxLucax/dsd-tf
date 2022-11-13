@@ -1,6 +1,7 @@
 package friends;
 
 import infra.*;
+import infra.request.*;
 
 import java.sql.SQLException;
 

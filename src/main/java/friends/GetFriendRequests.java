@@ -1,10 +1,12 @@
 package friends;
 
 import infra.*;
+import infra.request.Request;
+import infra.request.RequestHandler;
+import infra.request.Response;
+import infra.request.SharedContext;
 
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 
 public class GetFriendRequests extends RequestHandler {

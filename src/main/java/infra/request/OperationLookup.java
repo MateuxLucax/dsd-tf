@@ -1,4 +1,4 @@
-package infra;
+package infra.request;
 
 import friends.*;
 import messages.*;

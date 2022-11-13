@@ -1,6 +1,6 @@
 package meta;
 
-import infra.*;
+import infra.request.*;
 
 import java.sql.SQLException;
 

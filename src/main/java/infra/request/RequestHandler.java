@@ -1,4 +1,4 @@
-package infra;
+package infra.request;
 
 import com.google.gson.JsonSyntaxException;
 
@@ -49,5 +49,10 @@ public abstract class RequestHandler {
     // true by default, handlers that do not require it need to override
     public boolean tokenRequired() {
         return true;
+    }
+
+    // false by default, handlers that require it need to override
+    public boolean keepSocketOpen() {
+        return false;
     }
 }

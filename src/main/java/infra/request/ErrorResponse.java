@@ -1,4 +1,4 @@
-package infra;
+package infra.request;
 
 /**
  * This class is intended to be used in request handlers performing database transactions when you need to roll back.

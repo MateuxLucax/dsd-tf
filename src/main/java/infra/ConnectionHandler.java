@@ -1,5 +1,8 @@
 package infra;
 
+import infra.request.*;
+import infra.session.SessionManager;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
@@ -60,6 +63,8 @@ public class ConnectionHandler extends Thread {
                         if (responseToWrite.isEmpty()) {
                             responseToWrite = Optional.of(handler.run());
                         }
+
+                        shouldCloseSocket = !handler.keepSocketOpen();
                     }
 
                 } catch (IOException | SQLException e) {

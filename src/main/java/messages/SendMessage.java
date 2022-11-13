@@ -1,6 +1,7 @@
 package messages;
 
 import infra.*;
+import infra.request.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;

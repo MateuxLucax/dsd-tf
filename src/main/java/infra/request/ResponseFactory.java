@@ -1,4 +1,4 @@
-package infra;
+package infra.request;
 
 import com.google.gson.Gson;
 

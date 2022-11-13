@@ -1,4 +1,4 @@
-package infra;
+package infra.request;
 
 // To be converted into JSON: { messageCode: ... }
 

@@ -1,4 +1,4 @@
-package infra;
+package infra.session;
 
 // TODO make thread-safe, if necessary
 

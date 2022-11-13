@@ -1,8 +1,10 @@
-package infra;
+package infra.request;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import helpers.RecordTypeAdapterFactory;
+import infra.request.ResponseFactory;
+import infra.session.SessionManager;
 
 public class SharedContext {
 

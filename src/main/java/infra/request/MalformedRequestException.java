@@ -1,4 +1,4 @@
-package infra;
+package infra.request;
 
 public class MalformedRequestException extends Exception {
 

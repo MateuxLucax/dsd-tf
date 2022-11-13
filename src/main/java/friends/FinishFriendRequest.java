@@ -4,6 +4,7 @@ package friends;
 // In both cases, the friend request is removed
 
 import infra.*;
+import infra.request.*;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
