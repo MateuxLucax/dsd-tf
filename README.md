@@ -78,7 +78,7 @@ Essas requisições não tem erros possíveis nem requerem corpos.
 
 Quando uma operação falha e é necessário informar na resposta o que aconteceu, retornamos um código de erro para que o cliente se responsabilize por mostrar como for melhor. De fato, o cliente Android pode mostrar a mensagem em inglês ou português. A seguinte request é um índice desses códigos de erro.
 
-Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode": "INCORRECT_CREDENTIALS"}`
+Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode": "INCORRECT_CREDENTIALS"}`. Os erros retornados assim são informados na coluna "possíveis erros" das especificações das mensagens.
 
 |Operação|Requer token?|Resposta|
 |---|---|---|
@@ -453,8 +453,6 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
   </tr>
 </table>
 
-get-friends
-
 <table>
   <tr>
     <th>Operação</th>
@@ -600,5 +598,93 @@ get-friends
 
 ### Requests para manter mensagens
 
-send-message
-get-messages
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>send-message</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Envia uma mensagem a um amigo.</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>
+      Somente textContents <b>ou</b> fileReference deve estar presente. Ou seja, a mensagem ou contém texto ou contém um arquivo.
+      <ul>
+        <li><code>to</code> ID do usuário destinatário.</li>
+        <li><code>textContents</code> ID do usuário destinatário.</li>
+        <li><code>fileReference</code> Nome do arquivo.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>
+      <ul>
+        <li><code>id</code> ID da mensagem.</li>
+        <li><code>sentAt</code> Timestamp em que a mensagem foi enviada.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>
+      <ul>
+        <li><code>MALFORMED_MESSAGE</code> Quando não segue a regra de que <code>textContents</code> <b>ou</b> <code>fileReference</code> deve estar presente.</li>
+        <li><code>NOT_FRIENDS</code> Quando o usuário destinatário não é amigo de quem enviou.</li>
+        <li><code>INTERNAL</code></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>get-messages</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Busca as mensagens trocadas com um amigo. Não retorna <i>todas</i>, porque seriam muitas, usando paginação no lugar. Mas a paginação também não é por páginas numeradas: deve ser informadas quantas mensagens pegar <i>antes</i> de uma mensagem dada.</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>
+      <ul>
+        <li><code>friendId</code> ID do usuário amigo.</li>
+        <li><code>before</code> ID da mensagem a partir da qual a busca deve ser feita, incluindo ela.</li>
+        <li><code>limit</code> Quantidade de mensagens a trazer.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>
+      Arrary de mensagens trocadas com o amigo, primeiro as mais recentes e depois as mais antigas (ordenadas pelo ID que incrementa monotonicamente).
+      <ul>
+        <li><code>id</code> ID da mensagem.</li>
+        <li><code>userId</code> ID do usuário que enviou a mensagem (você ou o amigo).</li>
+        <li><code>sentAt</code> Timestamp em que a mensagem foi enviada.</li>
+        <li><code>textContents</code></li>
+        <li><code>fileReference</code></li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>
+      <ul>
+        <li><code>NOT_FRIENDS</code> Quando o usuário informado não é seu amigo.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
