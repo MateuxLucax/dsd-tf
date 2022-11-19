@@ -26,8 +26,7 @@ public class GetFile extends RequestHandler {
             if (!file.canRead()) {
                 throw new ErrorResponse("internal", MsgCode.IO_ERROR);
             }
-            try {
-                var in = new FileInputStream(file);
+            try (var in = new FileInputStream(file)) {
                 var fileContents = new byte[(int) file.length()];
                 in.read(fileContents);
                 return new Response(true, "", fileContents);

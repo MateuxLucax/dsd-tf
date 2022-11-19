@@ -36,6 +36,7 @@ Toda mensagem é composta por uma sequência de headers, uma linha em branco, e 
 - `operation`: Identificador da operação sendo realizada; obrigatório.
 - `token`: Token de acesso. Obrigatório dependendo da request, nem todas precisam.
 - `body-size`: Tamanho do corpo em bytes; obrigatório (mesmo que seja 0).
+- `file-extension`: Extensão do arquivo (.wav, .png); obrigatório nas requests `put-file` e `get-file`.
 
 O sistema permite headers que não sejam esses, mas não faz nada com eles.
 
@@ -521,8 +522,81 @@ get-friends
 
 ### Requests para manter arquivos
 
-put-file
-get-file
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>put-file</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Envia um arquivo para ficar armazenado no servidor. Não é uma ação que o usuário vai causar diretamente. Quando ele envia uma mensagem com áudio, primeiro o áudio tem que ser armazenado num arquivo no servidor por meio dessa operação e depois a mensagem tem que ser enviada com uma referência a esse arquivo.</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>
+      O corpo é o conteúdo binário do arquivo.
+    </td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>
+      <ul>
+        <li><code>filename</code> Nome do arquivo no servidor (UUID aleatório). Usado para referenciar na mensagem. Inclui extensão.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>
+      <ul>
+        <li><code>MISSING_FILE_EXTENSION_HEADER</code></li>
+        <li><code>IO_ERROR</code></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>get-file</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Busca o conteúdo binário de um arquivo armazenado no servidor.</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>
+      <ul>
+        <li><code>filename</code> Nome do arquivo no servidor.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>
+      Conteúdo binário do arquivo.
+    </td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>
+      <ul>
+        <li><code>FILE_DOES_NOT_EXIST</code></li>
+        <li><code>IO_ERROR</code></li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 ### Requests para manter mensagens
 
