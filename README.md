@@ -37,7 +37,7 @@ Toda mensagem é composta por uma sequência de headers, uma linha em branco, e 
 - `token`: Token de acesso. Obrigatório dependendo da request, nem todas precisam.
 - `body-size`: Tamanho do corpo em bytes; obrigatório (mesmo que seja 0).
 
-Mesmo que o sistema não utilize eles, headers arbitrários podem ser informados.
+O sistema permite headers que não sejam esses, mas não faz nada com eles.
 
 Esse é o formato das requests. As respostas segue o mesmo formato, mas os headers são diferentes:
 - `status`: Os valores possíveis são `ok` ou `err:<tipo do erro>`, onde `<tipo do erro>` pode ser `internal` (erro do servidor) ou `badRequest` (erro do usuário, na request).
