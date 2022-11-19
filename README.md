@@ -91,6 +91,10 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
     <td><code>create-user</code></td>
   </tr>
   <tr>
+    <th>Descrição</th>
+    <td>Cria uma conta para um usuário novo</td>
+  </tr>
+  <tr>
     <th>Requer token?</th>
     <td>Não</td>
   </tr>
@@ -127,6 +131,10 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
   <tr>
     <th>Operação</th>
     <td><code>create-session</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Operação para fazer login do usuário. Cria uma sessão com um token associado, que é retornado para autenticar o usuário em operações posteriores.</td>
   </tr>
   <tr>
     <th>Requer token?</th>
@@ -169,6 +177,10 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
     <td><code>edit-user</code></td>
   </tr>
   <tr>
+    <th>Descrição</th>
+    <td>Altera dadaos do usuário</td>
+  </tr>
+  <tr>
     <th>Requer token?</th>
     <td>Sim</td>
   </tr>
@@ -201,6 +213,10 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
     <td><code>whoami</code></td>
   </tr>
   <tr>
+    <th>Descrição</th>
+    <td>Retorna os dados completos do usuário logado (exceto senha)</td>
+  </tr>
+  <tr>
     <th>Requer token?</th>
     <td>Sim</td>
   </tr>
@@ -229,6 +245,10 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
   <tr>
     <th>Operação</th>
     <td><code>search-users</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Busca de usuários. Permite filtrar por nome. Tem paginação.</td>
   </tr>
   <tr>
     <th>Requer token?</th>
@@ -271,6 +291,10 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
     <td><code>end-session</code></td>
   </tr>
   <tr>
+    <th>Descrição</th>
+    <td>Finaliza sessão atual do usuário.</td>
+  </tr>
+  <tr>
     <th>Requer token?</th>
     <td>Sim</td>
   </tr>
@@ -292,14 +316,215 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
   </tr>
 </table>
 
-get-friend-requests
-send-friend-request
-finish-friend-request
+### Requests para manter amizades
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>get-friend-requests</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Lista pedidos de amizade envolvendo o usuário (enviados por ele ou para ele).</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>Sem corpo</td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>
+      Array de pedidos de amizade, onde cada pedido de amizade é um objeto com os seguintes atributos:
+      <ul>
+        <li>
+          <code>from</code> Objeto representando usuário que enviou o pedido:
+          <ul>
+            <li><code>id</code></li>
+            <li><code>username</code></li>
+            <li><code>fullname</code></li>
+          </ul>
+        </li>
+        <li>
+          <code>to</code> Objeto representando o usuário que recebeu o pedido:
+          <ul>
+            <li><code>id</code></li>
+            <li><code>username</code></li>
+            <li><code>fullname</code></li>
+          </ul>
+        </li>
+        <li><code>createdAt</code> Data em que o pedido de amizade foi enviado</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>Nenhum</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>send-friend-request</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Envia pedido de amizade a um outro usuário</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>
+      <ul>
+        <li><code>userId</code> ID do usuário a quem o pedido vai ser enviado</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>
+      <ul>
+        <li><code>messageCode</code> igual a <code>SENT_FRIEND_REQUEST_SUCCESSFULLY</code></li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>
+      <ul>
+        <li><code>FRIEND_REQUEST_TO_YOURSELF</code></li>
+        <li><code>NO_USER_WITH_GIVEN_ID</code></li>
+        <li><code>YOU_ALREADY_SENT_FRIEND_REQUEST</code></li>
+        <li><code>THEY_ALREADY_SENT_FRIEND_REQUEST</code></li>
+        <li><code>ALREADY_FRIENDS</code></li>
+        <li><code>FAILED_TO_SEND_FRIEND_REQUEST</code></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>finish-friend-request</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Finaliza (aceita ou rejeita) um pedido de amizade. Ao aceitar, o usuário se torna amigo. Em ambos os casos, o pedido é simplesmente exluído no final.</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>
+      <ul>
+        <li><code>senderId</code> ID do usuário que enviou o pedido. Isso serve para identificar o pedido (há no máximo 1 pedido de amizade por par de usuários)</li>
+        <li><code>accepted</code> Se o pedido foi aceito ou rejeitado.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>
+      <ul>
+        <li><code>messageCode</code> com mensagem de código <code>FINISHED_FRIEND_REQUEST_SUCCESSFULLY</code></li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>
+      <ul>
+        <li><code>FRIEND_REQUEST_TO_YOURSELF</code></li>
+        <li><code>FRIEND_REQUEST_NOT_FOUND</code> Caso o usuário com id <code>senderId</code> não enviou um pedido de amizade a você.</li>
+        <li><code>FAILED_TO_FINISH_FRIEND_REQUEST</code></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
 get-friends
-remove-friend
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>get-friends</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Retorna lista de amigos do usuário.</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>Sem corpo</td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>
+      Array com os dados dos usuários amigos, onde cada usuário é representado por um objeto com os seguintes atributos:
+      <ul>
+        <li><code>id</code></li>
+        <li><code>username</code></li>
+        <li><code>fullname</code></li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>Nenhum</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>remove-friends</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Desfaz uma amizade. Os usuários não serão mais amigos e, portanto, não poderão conversar mais. Poderão ainda enviar pedidos de amizade entre si.</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>
+      <ul>
+        <li><code>friendId</code></li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>Sem corpo</td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>Nenhum. Não importa se o usuário nem era amigo em primeiro lugar, o resultado final é o mesmo (não são amigos), então nesse caso não consideramos erro.</td>
+  </tr>
+</table>
+
+### Requests para manter arquivos
 
 put-file
 get-file
+
+### Requests para manter mensagens
 
 send-message
 get-messages
