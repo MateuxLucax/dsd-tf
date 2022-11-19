@@ -39,12 +39,37 @@ Toda mensagem é composta por uma sequência de headers, uma linha em branco, e 
 
 Mesmo que o sistema não utilize eles, headers arbitrários podem ser informados.
 
-Esse é o formato das requests. O formato das respostas segue o mesmo formato. O que muda são os headers:
+Esse é o formato das requests. As respostas segue o mesmo formato, mas os headers são diferentes:
 - `status`: Os valores possíveis são `ok` ou `err:<tipo do erro>`, onde `<tipo do erro>` pode ser `internal` (erro do servidor) ou `badRequest` (erro do usuário, na request).
+- `body-size`: Tamanho do corpo em bytes (sempre presente, mesmo que seja 0).
 
 Apresentamos a seguir a especificação de cada mensagem. A não ser onde outro formato é especificado, presuma que o formato de todos os corpos de request e response são JSON.
 
+Outro detalhe é que qualquer request com corpo JSON pode ter possível retorno o código de erro `FAILED_TO_PARSE_JSON`, então omitimos na coluna de "possíves erros".
+
+### Tipos de dados
+
+<table>
+  <tr>
+    <th>Nome</th>
+    <td><code>FriendshipStatus</code></td>
+  </tr>
+  <tr>
+    <th>Possíveis valores</th>
+    <td>
+      <ul>
+        <li><code>"NO_FRIEND_REQUEST"</code>: Usuário não é amigo e não existe nenhum pedido de amizade dele ou enviado para ele</li>
+        <li><code>"SENT_FRIEND_REQUEST"</code>: Usuário não é amigo mas lhe enviou um pedido de amizade</li>
+        <li><code>"RECEIVED_FRIEND_REQUEST"</code>: Usuário não é amigo mas você enviou um pedido de amizade a ele</li>
+        <li><code>"IS_FRIEND"</code>: Usuário é amigo</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
 ### "Meta"-requests
+
+Essas requisições não tem erros possíveis nem requerem corpos.
 
 |Operação|Requer token?|Resposta|
 |---|---|---|
@@ -98,11 +123,174 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
   </tr>
 </table>
 
-edit-user
-create-session
-whoami
-search-users
-end-session
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>create-session</code></td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Não</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>
+      <ul>
+        <li><code>username</code></li>
+        <li><code>password</code></li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>
+      <ul>
+        <li><code>token</code> Token para ser utilizado no header <code>token</code> para acessos posteriores</li>
+        <li><code>id</code> ID do usuário</li>
+        <li><code>fullname</code> Nome completo do usuário</li>
+      </ul>
+      Os dois últimos campos retornam os dados do usuário que o cliente não tem (tem somente username e password usados no login) para que tenha os dados completos do usuário.
+    </td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>
+      <ul>
+        <li><code>INCORRECT_CREDENTIALS</code></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>edit-user</code></td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>
+      <ul>
+        <li><code>newFullname</code> Novo nome completo</li>
+        <li><code>newPassword</code> Nova senha</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>Sem resposta</td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>
+      <ul>
+        <li><code>INTERNAL</code> Quando não existe usuário com o ID de usuário associado ao token enviado na request. Indica um bug, não deveria ser possível. </li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>whoami</code></td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>Sem corpo</td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>
+      <ul>
+        <li><code>username</code></li>
+        <li><code>fullname</code></li>
+        <li><code>createdAt</code> Timestamp da data de criação do usuário</li>
+        <li><code>updatedAt</code> Timestamp da data da última alteração dos dados do usuário (`null` caso nunca)</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>Nenhum</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>search-users</code></td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>
+      <ul>
+        <li><code>query</code> Filtro por nome de usuário</li>
+        <li><code>page</code> Os resultados vem paginados (20 por página), então é necessário informar qual página de resultados está sendo visualizada</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>
+      A resposta é um array com os dados dos usuários cujos nomes contém a string dada em <code>query</code>. Os dados de cada usuários retornados são os seguintes:
+      <ul>
+        <li><code>id</code></li>
+        <li><code>username</code></li>
+        <li><code>fullname</code>>
+        <li><code>friendshipStatus</code></li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>
+      <ul>
+        <li><code>INVALID_PAGE_NUMBER</code> Caso <code>page</code> seja menor que 0.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>end-session</code></td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>Sem corpo</td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>Sem resposta</td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>
+      <ul>
+        <li><code>INTERNAL</code> Caso o token enviado não tenha uma sessão correspondente.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 get-friend-requests
 send-friend-request
