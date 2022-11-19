@@ -35,9 +35,6 @@ create table friend_requests (
         sender_id   integer not null,
         receiver_id integer not null,
         created_at  timestamp default current_timestamp not null,
-        updated_at  timestamp null,  -- when it was accepted/rejected
-
-        check (updated_at is null or updated_at > created_at),
 
         primary key (sender_id, receiver_id),
 

@@ -250,7 +250,7 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
       <ul>
         <li><code>id</code></li>
         <li><code>username</code></li>
-        <li><code>fullname</code>>
+        <li><code>fullname</code>
         <li><code>friendshipStatus</code></li>
       </ul>
     </td>

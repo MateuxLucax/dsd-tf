@@ -21,7 +21,7 @@ public class GetFriendRequests extends RequestHandler {
 
     private record UserData(int id, String username, String fullname) {}
 
-    private record FriendRequestData(UserData from, UserData to, String createdAt, String updatedAt) {}
+    private record FriendRequestData(UserData from, UserData to, String createdAt) {}
 
     @Override
     public Response run() throws SQLException, InterruptedException {
@@ -32,7 +32,6 @@ public class GetFriendRequests extends RequestHandler {
 
             var sql =
                 "SELECT fr.created_at" +
-                "     , fr.updated_at" +
                 "     , us.id AS sender_id" +
                 "     , us.username AS sender_username" +
                 "     , us.fullname AS sender_fullname" +
@@ -71,10 +70,7 @@ public class GetFriendRequests extends RequestHandler {
 
                 var createdAtString = res.getTimestamp("created_at").toInstant().toString();
 
-                var updatedAt = res.getTimestamp("updated_at");
-                var updatedAtString = updatedAt != null ? updatedAt.toInstant().toString() : null;
-
-                var friendRequest = new FriendRequestData(sender, receiver, createdAtString, updatedAtString);
+                var friendRequest = new FriendRequestData(sender, receiver, createdAtString);
                 friendRequestList.add(friendRequest);
             }
 
