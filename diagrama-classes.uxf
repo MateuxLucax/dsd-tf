@@ -1,0 +1,918 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.0.0">
+  <zoom_level>5</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>290</x>
+      <y>50</y>
+      <w>140</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>SessionData
+-
+- createdAt: Instant
+- userId: long
+- token: String
+-
++ SessionData(token: String, userId: long)
++ getUserId(): long
++ getToken(): String
++ isExpired(): boolean</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>285</x>
+      <y>170</y>
+      <w>150</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>SessionManager
+-
+_+ SESSION_DURATION: Duration_
+_+ THREAD_SLEEP: Duration_
+_- TOKEN_LENGTH _
+_- random: Random_
+_- sema: Semaphore_
+-
+_+ charOutsideInvalidRanges(i: int): boolean_
+_+ tokenSyntaxValid(tok: String): boolean_
+_+ makeToken(): String_
+
++ cleanExpiredSessions()
++ createSession(id: long): String
++ hasSession(token: String): boolean
++ getSessionData(token: String)
+- removeSessionImpl(session: SessionData)
++ removeSession(session: SessionData)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>65</x>
+      <y>130</y>
+      <w>200</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>SessionCleaner
+-
++ SessionCleaner(mgr: SessionManager, sleepDuration: long)
++ run()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>145</x>
+      <y>95</y>
+      <w>50</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>Thread</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>165</x>
+      <y>105</y>
+      <w>15</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>120</x>
+      <y>170</y>
+      <w>105</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>Periodicamente invoca
+clearExpiredSessions()
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>510</x>
+      <y>55</y>
+      <w>135</w>
+      <h>45</h>
+    </coordinates>
+    <panel_attributes>SharedContext
+-
++ sessionManager(): SessionManager
++ responseFactory(): ResponseFactory
++ gson(): Gson</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>510</x>
+      <y>15</y>
+      <w>100</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>Agrupa objetos disponíveis
+para todos os
+RequestHandlers
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>540</x>
+      <y>150</y>
+      <w>30</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>Gson</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>430</x>
+      <y>95</y>
+      <w>100</w>
+      <h>85</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+m2=1</panel_attributes>
+    <additional_attributes>10.0;150.0;180.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>525</x>
+      <y>95</y>
+      <w>35</w>
+      <h>65</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+m2=1</panel_attributes>
+    <additional_attributes>50.0;110.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>620</x>
+      <y>95</y>
+      <w>30</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+m2=1</panel_attributes>
+    <additional_attributes>40.0;90.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>615</x>
+      <y>140</y>
+      <w>155</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>ResponseFactory
+-
++ err(e: ErrorResponse): Response
++ err(kind: String, code: MsgCode): Response
++ json(o: Object): Response
++ justOk(): Response</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>565</x>
+      <y>145</y>
+      <w>60</w>
+      <h>25</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+
+m1=1
+m2=1</panel_attributes>
+    <additional_attributes>100.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>505</x>
+      <y>250</y>
+      <w>90</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>Server
+-
++ main(String[] args)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>430</x>
+      <y>260</y>
+      <w>85</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=1
+m2=1</panel_attributes>
+    <additional_attributes>10.0;10.0;150.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>345</x>
+      <y>45</y>
+      <w>95</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>lt=..</panel_attributes>
+    <additional_attributes>10.0;10.0;170.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>95</y>
+      <w>20</w>
+      <h>165</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=1
+m2=1
+</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;310.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>655</x>
+      <y>240</y>
+      <w>190</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>ConnectionHandler
+-
++ ConnectionHandler(socket: Socket, ctx: SharedContext)
++ run()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>725</x>
+      <y>205</y>
+      <w>50</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>Thread</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>745</x>
+      <y>215</y>
+      <w>15</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>575</x>
+      <y>95</y>
+      <w>90</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+m2=0..n</panel_attributes>
+    <additional_attributes>10.0;10.0;70.0;260.0;160.0;320.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>590</x>
+      <y>255</y>
+      <w>75</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=0..n
+m2=1
+</panel_attributes>
+    <additional_attributes>130.0;20.0;10.0;30.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>600</x>
+      <y>310</y>
+      <w>50</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>Socket</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>580</x>
+      <y>275</y>
+      <w>30</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=1
+m2=1
+</panel_attributes>
+    <additional_attributes>40.0;80.0;10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>645</x>
+      <y>270</y>
+      <w>35</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+m2=1
+</panel_attributes>
+    <additional_attributes>10.0;90.0;40.0;90.0;40.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>885</x>
+      <y>250</y>
+      <w>180</w>
+      <h>95</h>
+    </coordinates>
+    <panel_attributes>/RequestHandler/
+-
++ RequestHandler(req: Request, ctx: SharedContext)
+-
++ setSocket(socket: Socket)
++ getSocket(): Socket
++ getToken(): String
++ getUserId(): String
++ &lt;T&gt; readJson(C: Class&lt;T&gt;): T
+/+ run(): Response/
++ tokenRequired(): boolean +
++ keepSocketOpen(): boolean +
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>810</x>
+      <y>135</y>
+      <w>210</w>
+      <h>45</h>
+    </coordinates>
+    <panel_attributes>OperationLookup
+-
+_- map: Map&lt;String, RequestHandlerConstructor&gt;_
+-
+_+ get(operation: String): Optional&lt;RequestHandlerConstructor&gt;_
+_+ names(): Collection&lt;String&gt;_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLInterface</id>
+    <coordinates>
+      <x>825</x>
+      <y>75</y>
+      <w>150</w>
+      <h>45</h>
+    </coordinates>
+    <panel_attributes>RequestHandlerConstructor
+--
+constructor(req: Request, ctx: SharedContext)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>585</x>
+      <y>365</y>
+      <w>185</w>
+      <h>75</h>
+    </coordinates>
+    <panel_attributes>Request
+-
+- headers: Map&lt;String, String&gt;
+- body: byte[]
+-
+- Request(headers: Map&lt;String, String&gt;, body: byte[])
++ headers(): Map&lt;String, String&gt;
++ body(): byte[]
+_- readHeaders(into: Map&lt;String, String&gt;, in: InputStream)_
+_+ from(in: InputStream): Request_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>695</x>
+      <y>270</y>
+      <w>20</w>
+      <h>105</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=1
+m2=1
+</panel_attributes>
+    <additional_attributes>10.0;190.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>725</x>
+      <y>285</y>
+      <w>170</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+m2=1
+</panel_attributes>
+    <additional_attributes>10.0;160.0;10.0;20.0;320.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>640</x>
+      <y>80</y>
+      <w>260</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+m2=0..n
+</panel_attributes>
+    <additional_attributes>10.0;10.0;300.0;90.0;300.0;270.0;500.0;340.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>635</x>
+      <y>275</y>
+      <w>260</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=1
+m2=1
+</panel_attributes>
+    <additional_attributes>10.0;100.0;10.0;140.0;170.0;140.0;170.0;20.0;500.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>785</x>
+      <y>365</y>
+      <w>145</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>Response
+-
+- ok: boolean
+- errKind: String
+- body: byte[]
+-
++ writeTo(out: OutputStream)
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>790</x>
+      <y>270</y>
+      <w>20</w>
+      <h>105</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=1
+m2=1
+</panel_attributes>
+    <additional_attributes>10.0;190.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1045</x>
+      <y>195</y>
+      <w>110</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>Database
+-
+_+ getConnection(): Connection_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>965</x>
+      <y>210</y>
+      <w>90</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=1
+m2=1</panel_attributes>
+    <additional_attributes>160.0;10.0;10.0;10.0;10.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>460</x>
+      <y>340</y>
+      <w>100</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>MalformedRequestException</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>555</x>
+      <y>270</y>
+      <w>150</w>
+      <h>95</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=1
+m2=1
+</panel_attributes>
+    <additional_attributes>10.0;160.0;270.0;160.0;270.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>545</x>
+      <y>350</y>
+      <w>50</w>
+      <h>75</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=1
+m2=1
+</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;120.0;80.0;120.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1030</x>
+      <y>115</y>
+      <w>115</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>Mapeia nomes das
+operações como string
+para construtor do
+RequestHandler
+correspondente, e.g.
+"get-messages" -&gt; GetMessages
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>955</x>
+      <y>405</y>
+      <w>50</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>CreateUser</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1020</x>
+      <y>405</y>
+      <w>50</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>CreateSession</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1085</x>
+      <y>405</y>
+      <w>50</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>SendMessage</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1150</x>
+      <y>405</y>
+      <w>50</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>...</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>975</x>
+      <y>340</y>
+      <w>15</w>
+      <h>75</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;130.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>975</x>
+      <y>340</y>
+      <w>80</w>
+      <h>75</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;80.0;140.0;80.0;140.0;130.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>975</x>
+      <y>340</y>
+      <w>145</w>
+      <h>75</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;80.0;270.0;80.0;270.0;130.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>975</x>
+      <y>340</y>
+      <w>210</w>
+      <h>75</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;80.0;400.0;80.0;400.0;130.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1130</x>
+      <y>435</y>
+      <w>70</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>Uma classe para
+cada operação / 
+tipo de mensagem
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>965</x>
+      <y>440</y>
+      <w>115</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enum&gt;&gt;
+FriendshipStatus
+-
+NO_FRIEND_REQUEST,
+SENT_FRIEND_REQUEST,
+RECEIVED_FRIEND_REQUEST,
+IS_FRIEND;</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>85</x>
+      <y>240</y>
+      <w>175</w>
+      <h>310</h>
+    </coordinates>
+    <panel_attributes>MsgCode
+-
+_+ from(name: String): Optional&lt;MsgCode&gt;_
+-
+    INTERNAL,
+    FAILED_TO_PARSE_JSON,
+    NO_USER_WITH_GIVEN_ID,
+    UNKNOWN_OPERATION,
+    TOKEN_EXPIRED,
+    MALFORMED_REQUEST,
+    NO_RESPONSE,
+    IO_ERROR,
+
+    FAILED_TO_CREATE_USER,
+    USERNAME_IN_USE,
+
+    INCORRECT_CREDENTIALS,
+
+    INVALID_PAGE_NUMBER,
+    
+    FRIEND_REQUEST_TO_YOURSELF,
+    YOU_ALREADY_SENT_FRIEND_REQUEST,
+    THEY_ALREADY_SENT_FRIEND_REQUEST,
+    FAILED_TO_SEND_FRIEND_REQUEST,
+    SENT_FRIEND_REQUEST_SUCCESSFULLY,
+    ALREADY_FRIENDS,
+
+
+    FRIEND_REQUEST_NOT_FOUND,
+    FAILED_TO_FINISH_FRIEND_REQUEST,
+    FINISHED_FRIEND_REQUEST_SUCCESSFULLY,
+    NOT_FRIENDS,
+
+    MISSING_FILE_EXTENSION_HEADER,
+
+    FILE_DOES_NOT_EXISTS,
+
+    MALFORMED_MESSAGE;
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>0</x>
+      <y>245</y>
+      <w>70</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>Códigos de erro
+para retorno
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>460</x>
+      <y>310</y>
+      <w>95</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>ResponseWriteException</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>550</x>
+      <y>270</y>
+      <w>145</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=1
+m2=1
+</panel_attributes>
+    <additional_attributes>10.0;100.0;50.0;140.0;260.0;140.0;260.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>445</x>
+      <y>315</y>
+      <w>365</w>
+      <h>145</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=1
+m2=1
+</panel_attributes>
+    <additional_attributes>30.0;10.0;10.0;30.0;10.0;130.0;270.0;270.0;660.0;270.0;710.0;210.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>305</x>
+      <y>400</y>
+      <w>140</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>ErrorResponse
+-
++ kind: String
+-
++ getKind(): String
++ getCode(): MsgCode
++ toResponseBody(): MessageCodeBody</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>255</x>
+      <y>410</y>
+      <w>60</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=1
+m2=0..n</panel_attributes>
+    <additional_attributes>10.0;10.0;100.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>310</x>
+      <y>470</y>
+      <w>115</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;record&gt;&gt;
+MessageCodeBody
+-
+- messageCode: String</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>310</x>
+      <y>515</y>
+      <w>185</w>
+      <h>25</h>
+    </coordinates>
+    <panel_attributes>Classe somente para serialização em JSON
+{"messageCode": "INCORRECT_CREDENTIALS} etc.
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>440</x>
+      <y>340</y>
+      <w>525</w>
+      <h>135</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;..
+m1=0..n
+m2=1</panel_attributes>
+    <additional_attributes>10.0;180.0;120.0;250.0;990.0;250.0;1030.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>340</x>
+      <y>355</y>
+      <w>50</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>Throwable</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>360</x>
+      <y>365</y>
+      <w>15</w>
+      <h>45</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
+  </element>
+</diagram>

@@ -12,6 +12,7 @@ public enum MsgCode {
     TOKEN_EXPIRED,
     MALFORMED_REQUEST,
     NO_RESPONSE,
+    IO_ERROR,
 
     // create-user
     FAILED_TO_CREATE_USER,
@@ -35,7 +36,16 @@ public enum MsgCode {
     FRIEND_REQUEST_NOT_FOUND,
     FAILED_TO_FINISH_FRIEND_REQUEST,
     FINISHED_FRIEND_REQUEST_SUCCESSFULLY,
-    MISSING_FILE_EXTENSION_HEADER, IO_ERROR, FILE_DOES_NOT_EXISTS, MALFORMED_MESSAGE, NOT_FRIENDS;
+    NOT_FRIENDS,
+
+    // put-file
+    MISSING_FILE_EXTENSION_HEADER,
+
+    // get-file
+    FILE_DOES_NOT_EXISTS,
+
+    // send-message
+    MALFORMED_MESSAGE;
 
     public static Optional<MsgCode> from(String name) {
         for (var code : values())
