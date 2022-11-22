@@ -56,8 +56,8 @@ create table messages (
     file_reference text null,
 
     /* one and only one is present */
-    check (text_contents is not null or file_reference is not null)
-    check (text_contents is null or file_reference is null)
+    check (text_contents is not null or file_reference is not null),
+    check (text_contents is null or file_reference is null),
 
     foreign key (sender_id) references users (id),
     foreign key (receiver_id) references users (id)

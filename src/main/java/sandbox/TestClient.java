@@ -12,7 +12,7 @@ import java.net.Socket;
 public class TestClient {
 
     public static String makeRequest(String operation, String body, String token, String ...additionalHeaders) throws IOException {
-        try (var socket = new Socket("localhost", 1235)) {
+        try (var socket = new Socket("localhost", 8080)) {
             var request = "";
             request += "operation " + operation + '\n';
             request += "body-size " + body.getBytes().length + '\n';
