@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 
 public class TestUtils {
@@ -19,6 +20,15 @@ public class TestUtils {
         .setPrettyPrinting()
         .registerTypeAdapterFactory(new RecordTypeAdapterFactory())
         .create();
+
+    private record CreateSessionData(
+      String username,
+      String password
+    ) {}
+
+    private record CreateSessionResponse(
+      String token
+    ) {}
 
     public static TestResponse jsonRequest(String operation, Object body) throws IOException {
         return jsonRequest(operation, body, new String[]{});
@@ -91,6 +101,21 @@ public class TestUtils {
         return DriverManager.getConnection("jdbc:sqlite:tests.db", config.toProperties());
     }
 
+    public static void runSql(String sql) throws SQLException {
+        try (var conn = TestUtils.testConnection()) {
+            try (var stmt = conn.createStatement()) {
+                stmt.execute(sql);
+            }
+        }
+    }
+
+    public static String loginGetToken(String username, String password) throws IOException {
+        var body = new CreateSessionData(username, password);
+        var resp = jsonRequest("create-session", body);
+        var json = resp.json(CreateSessionResponse.class);
+        return json.token();
+    }
+
     public static void clearTestsDatabase() throws SQLException {
 
         // far from being the most elegant solution, but:
@@ -100,15 +125,15 @@ public class TestUtils {
 
         var conn = testConnection();
         var sqls = new String[]{
-            "drop table if exists users;",
-            "create table users ( id          integer not null primary key autoincrement, username    text    unique not null, fullname    text    not null, password    text    not null, avatar_path text    null, created_at  timestamp default current_timestamp not null, updated_at  timestamp null, check (updated_at is null or updated_at > created_at) );",
+            "drop table if exists messages;",
+            "create table messages ( sender_id integer not null, receiver_id integer not null, id integer not null primary key autoincrement, sent_at timestamp not null default current_timestamp, text_contents text null, file_reference text null, check (text_contents is not null or file_reference is not null), check (text_contents is null or file_reference is null), foreign key (sender_id) references users (id), foreign key (receiver_id) references users (id) );",
             "drop table if exists friends;" +
             "create table friends ( your_id    integer not null, their_id   integer not null, created_at timestamp default current_timestamp not null, primary key (your_id, their_id), foreign key (your_id) references users(id), foreign key (their_id) references users(id) );",
             "drop table if exists friend_requests;",
             "create table friend_requests ( sender_id   integer not null, receiver_id integer not null, created_at  timestamp default current_timestamp not null, primary key (sender_id, receiver_id), foreign key (sender_id) references users(id), foreign key (receiver_id) references users(id) );",
             "create index idx_friend_requests_receiver on friend_requests(receiver_id, sender_id);",
-            "drop table if exists messages;",
-            "create table messages ( sender_id integer not null, receiver_id integer not null, id integer not null primary key autoincrement, sent_at timestamp not null default current_timestamp, text_contents text null, file_reference text null, check (text_contents is not null or file_reference is not null), check (text_contents is null or file_reference is null), foreign key (sender_id) references users (id), foreign key (receiver_id) references users (id) );",
+            "drop table if exists users;",
+            "create table users ( id          integer not null primary key autoincrement, username    text    unique not null, fullname    text    not null, password    text    not null, avatar_path text    null, created_at  timestamp default current_timestamp not null, updated_at  timestamp null, check (updated_at is null or updated_at > created_at) );",
         };
 
         for (var sql : sqls) {

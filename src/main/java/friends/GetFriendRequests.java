@@ -31,17 +31,18 @@ public class GetFriendRequests extends RequestHandler {
             var userId = getUserId();
 
             var sql =
-                "SELECT fr.created_at" +
-                "     , us.id AS sender_id" +
-                "     , us.username AS sender_username" +
-                "     , us.fullname AS sender_fullname" +
-                "     , ur.id AS receiver_id" +
-                "     , ur.username AS receiver_username" +
-                "     , ur.fullname AS receiver_fullname" +
-                "  FROM friend_requests fr" +
-                "  JOIN users us ON us.id = fr.sender_id" +
-                "  JOIN users ur ON ur.id = fr.receiver_id" +
-                " WHERE (fr.sender_id = ? OR fr.receiver_id = ?)";
+                "  SELECT fr.created_at" +
+                "       , us.id AS sender_id" +
+                "       , us.username AS sender_username" +
+                "       , us.fullname AS sender_fullname" +
+                "       , ur.id AS receiver_id" +
+                "       , ur.username AS receiver_username" +
+                "       , ur.fullname AS receiver_fullname" +
+                "    FROM friend_requests fr" +
+                "    JOIN users us ON us.id = fr.sender_id" +
+                "    JOIN users ur ON ur.id = fr.receiver_id" +
+                "   WHERE (fr.sender_id = ? OR fr.receiver_id = ?) " +
+                "ORDER BY fr.sender_id, fr.received_id";
 
             var stmt = conn.prepareStatement(sql);
             stmt.setLong(1, userId);
