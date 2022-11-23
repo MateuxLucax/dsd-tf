@@ -42,7 +42,7 @@ public class GetFriendRequests extends RequestHandler {
                 "    JOIN users us ON us.id = fr.sender_id" +
                 "    JOIN users ur ON ur.id = fr.receiver_id" +
                 "   WHERE (fr.sender_id = ? OR fr.receiver_id = ?) " +
-                "ORDER BY fr.sender_id, fr.received_id";
+                "ORDER BY fr.sender_id, fr.receiver_id";
 
             var stmt = conn.prepareStatement(sql);
             stmt.setLong(1, userId);
