@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 
 public class TestUtils {
@@ -45,53 +44,53 @@ public class TestUtils {
     }
 
     public static TestResponse makeRequest(String operation, byte[] body, String[] headers) throws IOException {
-        var bef = "";  // stuff before the body
-        bef += "operation " + operation + "\n";
-        bef += "body-size " + body.length + "\n";
+        StringBuilder bef = new StringBuilder();  // stuff before the body
+        bef.append("operation ").append(operation).append("\n");
+        bef.append("body-size ").append(body.length).append("\n");
         for (var header : headers) {
-            bef += header + "\n";
+            bef.append(header).append("\n");
         }
-        bef += "\n";
+        bef.append("\n");
 
-        var sock = new Socket(TEST_HOST, TEST_PORT);
-        var out = sock.getOutputStream();
-        out.write(bef.getBytes());
-        out.write(body);
+        try (
+            var sock = new Socket(TEST_HOST, TEST_PORT)
+        ) {
+            var responseHeaders = new HashMap<String, String>();
+            var out = sock.getOutputStream();
+            out.write(bef.toString().getBytes());
+            out.write(body);
 
-        var responseHeaders = new HashMap<String, String>();
-        var in = sock.getInputStream();
-        var buf = new byte[1024];
-        var len = 0;
-        while (true) {
-            var c = in.read();
+            var in = sock.getInputStream();
+            var buf = new byte[1024];
+            var len = 0;
+            while (true) {
+                var c = in.read();
+                if (c != -1 && c != '\n' && len < buf.length) {
+                    buf[len++] = (byte) c;
+                } else {
+                    var line = new String(buf, 0, len);
 
-            if (c != -1 && c != '\n' && len < buf.length) {
-                buf[len++] = (byte) c;
+                    // Blank like marking the end of the header section
+                    if (line.isBlank()) break;
+
+                    var split = line.indexOf(" ");
+
+                    var key = line.substring(0, split).trim().toLowerCase();
+                    var val = line.substring(split + 1).trim();
+
+                    responseHeaders.put(key, val);
+
+                    // End of request or prepare for next line
+                    if (c == -1) break;
+                    len = 0;
+                }
             }
-            else {
-                var line = new String(buf, 0, len);
 
-                // Blank like marking the end of the header section
-                if (line.isBlank()) break;
-
-                var split = line.indexOf(" ");
-
-                var key = line.substring(0, split).trim().toLowerCase();
-                var val = line.substring(split+1).trim();
-
-                responseHeaders.put(key, val);
-
-                // End of request or prepare for next line
-                if (c == -1) break;
-                len = 0;
-            }
+            var responseBodySize = Integer.parseInt(responseHeaders.get("body-size"));
+            var responseBody = new byte[responseBodySize];
+            in.readNBytes(responseBody, 0, responseBodySize);
+            return new TestResponse(responseHeaders, responseBody);
         }
-
-        var responseBodySize = Integer.parseInt(responseHeaders.get("body-size"));
-        var responseBody = new byte[responseBodySize];
-        in.readNBytes(responseBody, 0, responseBodySize);
-
-        return new TestResponse(responseHeaders, responseBody);
     }
 
     public static Connection testConnection() throws SQLException {

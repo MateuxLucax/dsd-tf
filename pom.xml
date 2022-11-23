@@ -8,6 +8,9 @@
     <artifactId>dsd-tf</artifactId>
     <version>1.0</version>
     <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

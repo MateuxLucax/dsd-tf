@@ -32,13 +32,13 @@ public class TestResponse {
     }
 
     public String headersToString() {
-        var s = "";
+        StringBuilder s = new StringBuilder();
         for (var header : headers.entrySet()) {
             var k = header.getKey();
             var v = header.getValue();
-            s += k + " " + v + "\n";
+            s.append(k).append(" ").append(v).append("\n");
         }
-        return s;
+        return s.toString();
     }
 
     public String toString() {

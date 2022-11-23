@@ -4,6 +4,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.sql.Timestamp;
+
 import static org.junit.Assert.*;
 
 public class UserTests {
@@ -86,4 +88,58 @@ public class UserTests {
         assertEquals(MsgCode.USERNAME_IN_USE.name(), json.messageCode());
     }
 
+    private record EditUserData(
+        String newFullname,
+        String newPassword
+    ) {}
+
+    private record WhoamiUserResponse(String username, String fullname, Timestamp createdAt, Timestamp updatedAt) {}
+
+    @Test
+    public void canEditAValidUser() {
+        // arrange
+        var user = new CreateUserData("test", "123", "Testimus III");
+        var editedUser = new EditUserData("test-edited", "1234");
+        TestResponse respEdited = null;
+        TestResponse respWhoami;
+        WhoamiUserResponse json = null;
+
+        // act
+        try {
+            TestUtils.jsonRequest("create-user", user);
+            var token = TestUtils.loginGetToken(user.username, user.password);
+            respEdited = TestUtils.jsonRequest("edit-user", editedUser, new String[]{ "token " + token });
+            respWhoami = TestUtils.jsonRequest("whoami", null, new String[]{"token " + token});
+            json = respWhoami.json(WhoamiUserResponse.class);
+        } catch (Exception e) {
+            fail();
+        }
+
+        // assert
+        assertNotNull(respEdited);
+        assertNotNull(json);
+        assertEquals(editedUser.newFullname, json.fullname);
+    }
+
+    @Test
+    public void cannotEditUserWithoutToken() {
+        // arrange
+        var user = new CreateUserData("test", "123", "Testimus III");
+        var editedUser = new EditUserData("test-edited", "1234");
+        TestResponse respEdited = null;
+        MessageCodeBody json = null;
+
+        // act
+        try {
+            TestUtils.jsonRequest("create-user", user);
+            respEdited = TestUtils.jsonRequest("edit-user", editedUser, new String[]{ "token " });
+            json = respEdited.json(MessageCodeBody.class);
+        } catch (Exception e) {
+            fail();
+        }
+
+        // assert
+        assertNotNull(respEdited);
+        assertEquals(MsgCode.MALFORMED_REQUEST.name(), json.messageCode());
+    }
 }
