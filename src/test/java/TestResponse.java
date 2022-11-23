@@ -27,6 +27,8 @@ public class TestResponse {
     public boolean ok() { return ok; }
     public String err() { return err; }
 
+    public String strbody() { return new String(body); }
+
     public <T> T json(Class<T> c) {
         return TestUtils.GSON.fromJson(new String(this.body), c);
     }
