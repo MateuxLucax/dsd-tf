@@ -1,20 +1,20 @@
 import com.google.gson.reflect.TypeToken;
 import infra.request.MessageCodeBody;
 import infra.request.MsgCode;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import user.FriendshipStatus;
 
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UserTests {
 
-    @Before
+    @BeforeEach
     public void setup() {
         try {
             TestUtils.clearTestsDatabase();
@@ -32,7 +32,7 @@ public class UserTests {
         }
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         try {
             TestUtils.clearTestsDatabase();
