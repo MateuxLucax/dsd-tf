@@ -219,13 +219,11 @@ public class UserTests {
     @Test
     public void cannotEndSessionWhithoutToken() {
         // arrange
-        var user = new CreateUserData("test", "123", "Testimus III");
         TestResponse resp = null;
         MessageCodeBody json = null;
 
         // act
         try {
-            TestUtils.jsonRequest("create-user", user);
             resp = TestUtils.jsonRequest("end-session", null, new String[] { "token " });
             json = resp.json(MessageCodeBody.class);
         } catch (Exception e) {
@@ -236,4 +234,48 @@ public class UserTests {
         assertNotNull(resp);
         assertEquals(MsgCode.MALFORMED_REQUEST.name(), json.messageCode());
     }
+
+    @Test
+    public void canRetrieveUserInfo() {
+        // arrange
+        var user = new CreateUserData("test", "123", "Testimus III");
+        TestResponse resp = null;
+        WhoamiUserResponse json = null;
+
+        // act
+        try {
+            TestUtils.jsonRequest("create-user", user);
+            var token = TestUtils.loginGetToken(user.username, user.password);
+            resp = TestUtils.jsonRequest("whoami", null, new String[]{ "token " + token });
+            json = resp.json(WhoamiUserResponse.class);
+        } catch (Exception e) {
+            fail();
+        }
+
+        // assert
+        assertNotNull(resp);
+        assertNotNull(json);
+        assertEquals(json.fullname, user.fullname);
+        assertEquals(json.username, user.username);
+    }
+
+    @Test
+    public void cannotRetrieveUserInfoWithoutToken() {
+        // arrange
+        TestResponse respEdited = null;
+        MessageCodeBody json = null;
+
+        // act
+        try {
+            respEdited = TestUtils.jsonRequest("edit-user", null, new String[]{ "token " });
+            json = respEdited.json(MessageCodeBody.class);
+        } catch (Exception e) {
+            fail();
+        }
+
+        // assert
+        assertNotNull(respEdited);
+        assertEquals(MsgCode.MALFORMED_REQUEST.name(), json.messageCode());
+    }
+
 }
