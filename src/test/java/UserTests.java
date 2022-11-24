@@ -195,4 +195,45 @@ public class UserTests {
         assertNotNull(resp);
         assertEquals(MsgCode.INCORRECT_CREDENTIALS.name(), json.messageCode());
     }
+
+    @Test
+    public void canEndSession() {
+        // arrange
+        var user = new CreateUserData("test", "123", "Testimus III");
+        TestResponse resp = null;
+
+        // act
+        try {
+            TestUtils.jsonRequest("create-user", user);
+            var token = TestUtils.loginGetToken(user.username, user.password);
+            resp = TestUtils.jsonRequest("end-session", null, new String[] { "token " + token });
+        } catch (Exception e) {
+            fail();
+        }
+
+        // assert
+        assertNotNull(resp);
+        assertTrue(resp.toString().contains("ok"));
+    }
+
+    @Test
+    public void cannotEndSessionWhithoutToken() {
+        // arrange
+        var user = new CreateUserData("test", "123", "Testimus III");
+        TestResponse resp = null;
+        MessageCodeBody json = null;
+
+        // act
+        try {
+            TestUtils.jsonRequest("create-user", user);
+            resp = TestUtils.jsonRequest("end-session", null, new String[] { "token " });
+            json = resp.json(MessageCodeBody.class);
+        } catch (Exception e) {
+            fail();
+        }
+
+        // assert
+        assertNotNull(resp);
+        assertEquals(MsgCode.MALFORMED_REQUEST.name(), json.messageCode());
+    }
 }
