@@ -142,4 +142,57 @@ public class UserTests {
         assertNotNull(respEdited);
         assertEquals(MsgCode.MALFORMED_REQUEST.name(), json.messageCode());
     }
+
+    private record CreateSessionResponse(
+        String token
+    ) {}
+
+    private record CreateSessionData(
+        String username,
+        String password
+    ) {}
+
+    @Test
+    public void canCreateAValidSession() {
+        // arrange
+        var user = new CreateUserData("test", "123", "Testimus III");
+        TestResponse resp = null;
+        CreateSessionResponse json = null;
+
+        // act
+        try {
+            TestUtils.jsonRequest("create-user", user);
+            var body = new CreateSessionData(user.username, user.password);
+            resp = TestUtils.jsonRequest("create-session", body);
+            json = resp.json(CreateSessionResponse.class);
+        } catch (Exception e) {
+            fail();
+        }
+
+        // assert
+        assertNotNull(resp);
+        assertFalse(json.token.isEmpty());
+    }
+
+    @Test
+    public void cannotCreateAValidSessionWhenPasswordInvalid() {
+        // arrange
+        var user = new CreateUserData("test", "123", "Testimus III");
+        TestResponse resp = null;
+        MessageCodeBody json = null;
+
+        // act
+        try {
+            TestUtils.jsonRequest("create-user", user);
+            var body = new CreateSessionData(user.username, "wrong-password");
+            resp = TestUtils.jsonRequest("create-session", body);
+            json = resp.json(MessageCodeBody.class);
+        } catch (Exception e) {
+            fail();
+        }
+
+        // assert
+        assertNotNull(resp);
+        assertEquals(MsgCode.INCORRECT_CREDENTIALS.name(), json.messageCode());
+    }
 }
