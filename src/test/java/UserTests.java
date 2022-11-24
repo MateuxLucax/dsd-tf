@@ -1,10 +1,14 @@
+import com.google.gson.reflect.TypeToken;
 import infra.request.MessageCodeBody;
 import infra.request.MsgCode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import user.FriendshipStatus;
 
+import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -278,4 +282,69 @@ public class UserTests {
         assertEquals(MsgCode.MALFORMED_REQUEST.name(), json.messageCode());
     }
 
+    private record SearchUserResponse(
+        long id,
+        String username,
+        String fullname,
+        FriendshipStatus friendshipStatus
+    ) {}
+
+    private record SearchUserData(String query, int page) {}
+
+    private static void createUsers() throws IOException {
+        var userA = new CreateUserData("test.1", "123", "Testimus I");
+        var userB = new CreateUserData("test.2", "123", "Testimus II");
+        var userC = new CreateUserData("test.3", "123", "Testimus III");
+
+        TestUtils.jsonRequest("create-user", userA);
+        TestUtils.jsonRequest("create-user", userB);
+        TestUtils.jsonRequest("create-user", userC);
+    }
+
+    @Test
+    public void canSearchUsers() {
+        // arrange
+        TestResponse resp = null;
+        List<SearchUserResponse> json = null;
+        var type = (new TypeToken<List<SearchUserResponse>>() {}).getType();
+
+        // act
+        try {
+            createUsers();
+            var token = TestUtils.loginGetToken("test.1", "123");
+            var body = new SearchUserData("", 1);
+            resp = TestUtils.jsonRequest("search-users", body, new String[]{ "token " + token });
+            json = TestUtils.GSON.fromJson(resp.strbody(), type);
+        } catch (Exception e) {
+            fail();
+        }
+
+        // assert
+        assertNotNull(resp);
+        assertNotNull(json);
+        assertEquals(3, json.size());
+        assertEquals("test.2", json.get(1).username);
+    }
+    @Test
+    public void cannotSearchUsersWithoutPage() {
+        // arrange
+        TestResponse resp = null;
+        MessageCodeBody json = null;
+
+        // act
+        try {
+            createUsers();
+            var token = TestUtils.loginGetToken("test.1", "123");
+            var body = new SearchUserData("", 0);
+            resp = TestUtils.jsonRequest("search-users", body, new String[]{ "token " + token });
+            json = resp.json(MessageCodeBody.class);
+        } catch (Exception e) {
+            fail();
+        }
+
+        // assert
+        assertNotNull(resp);
+        assertNotNull(json);
+        assertEquals(MsgCode.INVALID_PAGE_NUMBER.name(), json.messageCode());
+    }
 }
