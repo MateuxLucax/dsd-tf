@@ -1,6 +1,7 @@
 package messages;
 
-import infra.*;
+import infra.Database;
+import infra.SharedContext;
 import infra.request.*;
 
 import java.sql.Connection;

@@ -1,7 +1,11 @@
 package friends;
 
-import infra.*;
-import infra.request.*;
+import infra.Database;
+import infra.SharedContext;
+import infra.request.ErrorResponse;
+import infra.request.Request;
+import infra.request.RequestHandler;
+import infra.request.Response;
 
 import java.sql.SQLException;
 

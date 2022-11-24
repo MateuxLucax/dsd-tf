@@ -2,7 +2,8 @@ package user;
 
 // TODO could be session = socket on which user listens for server updates
 
-import infra.*;
+import infra.Database;
+import infra.SharedContext;
 import infra.request.*;
 
 import java.sql.SQLException;

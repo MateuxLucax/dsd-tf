@@ -1,10 +1,13 @@
 package infra.request;
 
+import files.GetFile;
+import files.PutFile;
 import friends.*;
 import infra.SharedContext;
-import messages.*;
-import meta.*;
-import files.*;
+import messages.GetMessages;
+import messages.SendMessage;
+import meta.GetAllErrorCodes;
+import meta.GetOperationIndex;
 import user.*;
 
 import java.util.Collection;

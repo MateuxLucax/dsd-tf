@@ -1,6 +1,6 @@
 package uploads;
 
-import infra.*;
+import infra.SharedContext;
 import infra.request.*;
 
 import java.io.File;

@@ -3,7 +3,8 @@ package friends;
 // Finish means accepting OR denying
 // In both cases, the friend request is removed
 
-import infra.*;
+import infra.Database;
+import infra.SharedContext;
 import infra.request.*;
 
 import java.sql.SQLException;

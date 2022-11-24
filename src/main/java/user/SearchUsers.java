@@ -1,10 +1,12 @@
 package user;
 
-import infra.*;
+import infra.Database;
+import infra.SharedContext;
 import infra.request.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SearchUsers extends RequestHandler {
 
@@ -73,7 +75,7 @@ public class SearchUsers extends RequestHandler {
 
             var res = stmt.executeQuery();
 
-            var users = new ArrayList<UserData>();
+            List<UserData> users = new ArrayList<>();
             while (res.next()) {
                 var id = res.getInt("id");
                 var username = res.getString("username");

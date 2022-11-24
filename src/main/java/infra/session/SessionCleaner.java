@@ -1,7 +1,5 @@
 package infra.session;
 
-import java.util.ArrayList;
-
 public class SessionCleaner extends Thread {
 
     private final SessionManager mgr;
