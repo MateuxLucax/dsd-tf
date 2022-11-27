@@ -3,5 +3,6 @@
 *.db-wal
 target/**
 .idea
-/uploads
+/uploads/*
 !/uploads/.gitkeep
+!/uploads/file.png

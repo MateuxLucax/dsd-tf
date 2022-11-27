@@ -617,7 +617,7 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
       Somente textContents <b>ou</b> fileReference deve estar presente. Ou seja, a mensagem ou contém texto ou contém um arquivo.
       <ul>
         <li><code>to</code> ID do usuário destinatário.</li>
-        <li><code>textContents</code> ID do usuário destinatário.</li>
+        <li><code>textContents</code> Conteúdo da Mensagem.</li>
         <li><code>fileReference</code> Nome do arquivo.</li>
       </ul>
     </td>

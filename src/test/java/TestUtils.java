@@ -39,6 +39,12 @@ public class TestUtils {
         return makeRequest(operation, bytes, headers);
     }
 
+    public static TestResponse jsonRequest(String operation, Object body, String[] headers, String fileExtension) throws IOException {
+        var json = TestUtils.GSON.toJson(body);
+        var bytes = json.getBytes();
+        return makeRequest(operation, bytes, headers, fileExtension);
+    }
+
     public static TestResponse makeRequest(String operation, byte[] body) throws IOException {
         return jsonRequest(operation, body, new String[]{});
     }
@@ -47,6 +53,20 @@ public class TestUtils {
         StringBuilder bef = new StringBuilder();  // stuff before the body
         bef.append("operation ").append(operation).append("\n");
         bef.append("body-size ").append(body.length).append("\n");
+
+        return getTestResponse(body, headers, bef);
+    }
+
+    public static TestResponse makeRequest(String operation, byte[] body, String[] headers, String fileExtension) throws IOException {
+        StringBuilder bef = new StringBuilder();  // stuff before the body
+        bef.append("operation ").append(operation).append("\n");
+        bef.append("body-size ").append(body.length).append("\n");
+        bef.append("file-extension ").append(fileExtension).append("\n");
+
+        return getTestResponse(body, headers, bef);
+    }
+
+    private static TestResponse getTestResponse(byte[] body, String[] headers, StringBuilder bef) throws IOException {
         for (var header : headers) {
             bef.append(header).append("\n");
         }
