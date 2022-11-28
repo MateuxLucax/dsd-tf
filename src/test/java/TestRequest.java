@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TestRequest {
 
-    // Mock input stream that returns a test
+    // Mock input stream that returns a text
     public static InputStream inputStreamFrom(String s) {
         return new InputStream() {
             private byte[] bytes = s.getBytes();
