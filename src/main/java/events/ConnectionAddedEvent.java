@@ -2,7 +2,7 @@ package events;
 
 import java.net.Socket;
 
-public record AddConnectionEvent(
+public record ConnectionAddedEvent(
         long userID,
         String token,
         Socket socket

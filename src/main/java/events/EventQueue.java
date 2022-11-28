@@ -47,9 +47,14 @@ public class EventQueue {
             var event = eventsToProcess.remove();
             // Process each event...
 
-            // Collect messaged to send in lists
-            // - globalMessages   (list<byteArray>)
-            // - messagesPerUser  (map<user, byteArray>)
+            // TODO when processing ConnectionAddedEvent, also send a message to the user containing the list of all currently online users
+
+            if (event instanceof ConnectionAddedEvent connAdded) {
+            }
+
+            // Collect messages to send in lists
+            // - globalMessages   (list<string>)
+            // - messagesPerUser  (map<user, string>)
         }
 
         // send all global messages

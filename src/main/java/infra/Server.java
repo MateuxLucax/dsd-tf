@@ -1,5 +1,6 @@
 package infra;
 
+import events.EventLoop;
 import infra.session.SessionCleaner;
 import infra.session.SessionManager;
 
@@ -29,6 +30,11 @@ public class Server {
                 sharedContext.sessionManager(), SessionManager.THREAD_SLEEP.toMillis()
             );
             sessionCleaner.start();
+
+            var eventLoop = new EventLoop(
+                sharedContext.eventQueue()
+            );
+            eventLoop.start();
 
             while (true) {
                 // Don't auto-close the socket, some connections will be kept alive for listening to updates
