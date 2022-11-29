@@ -11,36 +11,43 @@ import java.net.Socket;
 
 public class TestClient {
 
+    public static String makeRequestWith(Socket socket, String operation, String body, String token, String[] additionalHeaders) throws IOException {
+        var request = "";
+        request += "operation " + operation + '\n';
+        request += "body-size " + body.getBytes().length + '\n';
+        if (token != null) {
+            request += "token " + token + '\n';
+        }
+        for (var header : additionalHeaders) {
+            request += header + '\n';
+        }
+        request += "\n";
+        request += body;
+
+        System.out.println("--- REQUEST ---");
+        System.out.println(request);
+
+        var out = socket.getOutputStream();
+        out.write(request.getBytes());
+
+        var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        var line = "";
+
+        // TODO for the LiveTestClient we need to parse the response correctly
+        // in particular stop after reading body-size bytes in the body
+
+        var sb = new StringBuilder();
+        System.out.println("---- RESPONSE ----");
+        while ((line = in.readLine()) != null) {
+            System.out.println(line);
+            sb.append(line).append('\n');
+        }
+        return sb.toString();
+    }
+
     public static String makeRequest(String operation, String body, String token, String ...additionalHeaders) throws IOException {
         try (var socket = new Socket("localhost", 8080)) {
-            var request = "";
-            request += "operation " + operation + '\n';
-            request += "body-size " + body.getBytes().length + '\n';
-            if (token != null) {
-                request += "token " + token + '\n';
-            }
-            for (var header : additionalHeaders) {
-                request += header + '\n';
-            }
-            request += "\n";
-            request += body;
-
-            System.out.println("--- REQUEST ---");
-            System.out.println(request);
-
-            var out = socket.getOutputStream();
-            out.write(request.getBytes());
-
-            var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            var line = "";
-
-            var sb = new StringBuilder();
-            System.out.println("---- RESPONSE ----");
-            while ((line = in.readLine()) != null) {
-                System.out.println(line);
-                sb.append(line).append('\n');
-            }
-            return sb.toString();
+            return makeRequestWith(socket, operation, body, token, additionalHeaders);
         }
     }
 
