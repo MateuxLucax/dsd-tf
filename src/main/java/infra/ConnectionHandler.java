@@ -28,9 +28,8 @@ public class ConnectionHandler extends Thread {
 
                 var factory = ctx.responseFactory();
 
+                Optional<RequestHandler> maybeHandler = Optional.empty();
                 Optional<Response> responseToWrite = Optional.empty();
-                Optional<Runnable> afterResponseWritten = Optional.empty();
-                var shouldCloseSocket = true;
 
                 try {
                     var req = Request.from(in);
@@ -38,12 +37,13 @@ public class ConnectionHandler extends Thread {
                     var headers = req.headers();
                     var operation = headers.get("operation");
 
-                    var maybeHandler = OperationLookup.get(operation);
+                    var maybeHandlerConstructor = OperationLookup.get(operation);
 
-                    if (maybeHandler.isEmpty()) {
+                    if (maybeHandlerConstructor.isEmpty()) {
                         responseToWrite = Optional.of(factory.err("badRequest", MsgCode.UNKNOWN_OPERATION));
                     } else {
-                        var handler = maybeHandler.get().constructor(req, ctx);
+                        var handler = maybeHandlerConstructor.get().construct(req, ctx);
+                        maybeHandler = Optional.of(handler);
 
                         handler.setSocket(socket);
 
@@ -63,13 +63,9 @@ public class ConnectionHandler extends Thread {
                             }
                         }
 
-                        afterResponseWritten = Optional.of(handler::afterResponseWritten);
-
                         if (responseToWrite.isEmpty()) {
                             responseToWrite = Optional.of(handler.run());
                         }
-
-                        shouldCloseSocket = !handler.keepSocketOpen();
                     }
 
                 } catch (IOException | SQLException e) {
@@ -83,7 +79,15 @@ public class ConnectionHandler extends Thread {
                         .orElse(factory.err("internal", MsgCode.NO_RESPONSE))
                         .writeTo(out);
 
-                    afterResponseWritten.ifPresent(Runnable::run);
+                    var shouldCloseSocket = true;
+
+                    if (maybeHandler.isPresent()) {
+                        var handler = maybeHandler.get();
+                        handler.afterResponseWritten();
+                        if (handler.keepSocketOpen()) {
+                            shouldCloseSocket = false;
+                        }
+                    }
 
                     if (shouldCloseSocket) {
                         socket.close();
@@ -91,7 +95,7 @@ public class ConnectionHandler extends Thread {
 
                 }
             } catch (IOException e) {
-                System.err.println("FATAL ERROR: Failed to get socket input and/or output streams, or to close the socket");
+                System.err.println("FATAL ERROR: Failed to get socket input or output streams, or to close the socket");
                 e.printStackTrace();
                 socket.close();
             } catch (ResponseWriteException e) {

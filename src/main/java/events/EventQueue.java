@@ -1,10 +1,11 @@
 package events;
 
 import com.google.gson.Gson;
+import events.messages.EventMessage;
+import events.messages.OnlineUserListMessage;
+import events.messages.UserLoggedMessage;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 
@@ -15,13 +16,13 @@ public class EventQueue {
     private final Semaphore sema;
     private final Queue<Event> newEvents;
 
-    private final Map<Long, Map<String, Socket>> onlineSockets;
+    private final Map<Long, Map<String, LiveSocket>> onlineSockets;
 
     // hoisted from processEvents() scope to instance scope for reusing the memory
     // (constructed once, then reused along many processEvents() calls, instead of constructed again at each call)
     private final Queue<Event> eventsToProcess;
-    private final Queue<Object> globalMessages;
-    private final Map<Long, Queue<Object>> messagesPerUser;
+    private final Queue<EventMessage> globalMessages;
+    private final Map<Long, Queue<EventMessage>> messagesPerUser;
 
     public EventQueue(Gson gson) {
         this.gson = gson;
@@ -62,17 +63,7 @@ public class EventQueue {
         return buf;
     }
 
-    // TODO all these messages need an extra `type` field
-
-    private record UserLoggedMessage(
-        long userID
-    ) {}
-
-    private class OtherOnlineUsersMessage extends ArrayList<Long> {}
-
     public void processEvents() throws IOException {
-        // At the start of each processEvents() call the hoisted maps/lists/queues should all be empty
-
         // All we do with the queue is transfer it to another local queue for processing
         // This way, other threads can keep enqueueing events to it, at the same time we do the processing
         // I.e. we can process the events without blocking the event queue
@@ -84,24 +75,24 @@ public class EventQueue {
 
         while (!eventsToProcess.isEmpty()) {
             var event = eventsToProcess.remove();
-            // Process each event...
 
             System.out.println("Processing event " + event);
 
-            // TODO when processing ConnectionAddedEvent, also send a message to the user containing the list of all currently online users
-
             if (event instanceof ConnectionAddedEvent conn) {
+                var socket = conn.socket();
+                var userID = socket.userID();
+                var token = socket.userToken();
                 onlineSockets
-                    .computeIfAbsent(conn.userID(), id -> new HashMap<>())
-                    .put(conn.token(), conn.socket());
+                    .computeIfAbsent(userID, id -> new HashMap<>())
+                    .put(token, socket);
 
-                var gMessage = new UserLoggedMessage(conn.userID());
+                var gMessage = new UserLoggedMessage(userID);
                 globalMessages.add(gMessage);
 
-                var uMessage = new OtherOnlineUsersMessage();
-                uMessage.addAll(onlineSockets.keySet());
+                var onlineUsers = new ArrayList<>(onlineSockets.keySet());
+                var uMessage = new OnlineUserListMessage(onlineUsers);
                 messagesPerUser
-                    .computeIfAbsent(conn.userID(), id -> new ArrayDeque<>())
+                    .computeIfAbsent(userID, id -> new ArrayDeque<>())
                     .add(uMessage);
             }
         }
@@ -112,7 +103,11 @@ public class EventQueue {
             var bytes = prepareMessage(message);
             for (var socketMap : onlineSockets.values()) {
                 for (var socket : socketMap.values()) {
-                    socket.getOutputStream().write(bytes);
+                    if (socket.ioTryAcquire()) {
+                        socket.outputStream().write(bytes);
+                        socket.ioRelease();
+                    }
+                    // TODO deal with not being able to acquire the streams
                 }
             }
         }
@@ -125,15 +120,16 @@ public class EventQueue {
                 System.out.println("Sending message " + message + " to " + userID);
                 var bytes = prepareMessage(message);
                 for (var socket : onlineSockets.get(userID).values()) {
-                    socket.getOutputStream().write(bytes);
+                    if (socket.ioTryAcquire()) {
+                        socket.outputStream().write(bytes);
+                        socket.ioRelease();
+                    }
+                    // TODO deal with not being able to acquire the streams
                 }
             }
         }
 
         messagesPerUser.clear();
-
-        // send all global messages
-        // send all per user messages
     }
 
 }

@@ -19,7 +19,7 @@ import java.util.Optional;
 public class OperationLookup {
 
     public interface RequestHandlerConstructor {
-        RequestHandler constructor(Request req, SharedContext ctx);
+        RequestHandler construct(Request req, SharedContext ctx);
     }
 
     private static final Map<String, RequestHandlerConstructor> map;
