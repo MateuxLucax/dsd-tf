@@ -1,12 +1,7 @@
 package events;
 
 import infra.SharedContext;
-import infra.request.ErrorResponse;
-import infra.request.Request;
-import infra.request.RequestHandler;
-import infra.request.Response;
-
-import java.sql.SQLException;
+import infra.request.*;
 
 public class GoOnline extends RequestHandler {
 
@@ -18,13 +13,15 @@ public class GoOnline extends RequestHandler {
         return true;
     }
 
-    public Response run() throws SQLException, InterruptedException {
+    public Response run() {
+        System.out.println("GoOnline request handler running");
+
         try {
-            var userId = getUserId();
+            var userID = getUserId();
             var token = getToken();
             var socket = getSocket();
-            var event = new ConnectionAddedEvent(userId, token, socket);
 
+            var event = new ConnectionAddedEvent(userID, token, socket);
             ctx.eventQueue().enqueue(event);
             return responseFactory.justOk();
 

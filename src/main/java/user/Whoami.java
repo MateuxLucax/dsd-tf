@@ -16,7 +16,7 @@ public class Whoami extends RequestHandler {
     private record UserData(String username, String fullname, Timestamp createdAt, Timestamp updatedAt) {}
 
     @Override
-    public Response run() throws SQLException, InterruptedException {
+    public Response run() throws SQLException {
 
         var token = request.headers().get("token");
         var id = ctx.sessionManager().getSessionData(token).getUserId();

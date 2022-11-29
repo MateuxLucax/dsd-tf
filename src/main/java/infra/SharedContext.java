@@ -24,7 +24,7 @@ public class SharedContext {
 
         this.mgr = new SessionManager();
 
-        this.eventQueue = new EventQueue();
+        this.eventQueue = new EventQueue(this.gson);
     }
 
     public SessionManager sessionManager() {

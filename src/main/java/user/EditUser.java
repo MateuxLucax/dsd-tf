@@ -17,7 +17,7 @@ public class EditUser extends RequestHandler {
         String newPassword
     ) {}
 
-    public Response run() throws SQLException, InterruptedException {
+    public Response run() throws SQLException {
         try (var connection = Database.getConnection()) {
 
             var data = readJson(RequestData.class);

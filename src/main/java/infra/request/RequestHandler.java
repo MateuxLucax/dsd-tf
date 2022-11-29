@@ -33,7 +33,7 @@ public abstract class RequestHandler {
         return request.headers().get("token");
     }
 
-    public long getUserId() throws ErrorResponse, InterruptedException {
+    public long getUserId() throws ErrorResponse {
         var token = getToken();
         var sessionData = ctx.sessionManager().getSessionData(token);
         if (sessionData == null) {
@@ -55,7 +55,7 @@ public abstract class RequestHandler {
         }
     }
 
-    public abstract Response run() throws SQLException, InterruptedException;
+    public abstract Response run() throws SQLException;
 
     // true by default, handlers that do not require it need to override
     public boolean tokenRequired() {
@@ -66,4 +66,7 @@ public abstract class RequestHandler {
     public boolean keepSocketOpen() {
         return false;
     }
+
+    // does nothing by default
+    public void afterResponseWritten() {}
 }

@@ -22,7 +22,7 @@ public class GetFriends extends RequestHandler {
         super(request, ctx);
     }
 
-    public Response run() throws SQLException, InterruptedException {
+    public Response run() throws SQLException {
         try (var connection = Database.getConnection()) {
             var sql =
                 "SELECT u.id, u.username, u.fullname " +

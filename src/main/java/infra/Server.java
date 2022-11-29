@@ -31,9 +31,7 @@ public class Server {
             );
             sessionCleaner.start();
 
-            var eventLoop = new EventLoop(
-                sharedContext.eventQueue()
-            );
+            var eventLoop = new EventLoop( sharedContext.eventQueue() );
             eventLoop.start();
 
             while (true) {

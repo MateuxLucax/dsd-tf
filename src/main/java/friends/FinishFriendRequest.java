@@ -22,7 +22,7 @@ public class FinishFriendRequest extends RequestHandler {
         super(request, ctx);
     }
 
-    public Response run() throws SQLException, InterruptedException {
+    public Response run() throws SQLException {
         var connection = Database.getConnection();
         connection.setAutoCommit(false);
 

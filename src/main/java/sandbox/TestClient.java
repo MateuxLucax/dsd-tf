@@ -177,13 +177,23 @@ public class TestClient {
         makeRequest("get-messages", getmsg(1, 14, 3), tok);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void testOnline() throws IOException, InterruptedException {
+        var body = "{\"username\": \"dude\", \"fullname\": \"john dude\", \"password\": \"123\"}";
+        makeRequest("create-user", body, null);
+        var tok = loginGetToken("dude", "123");
+        makeRequest("go-online", "", tok);
+        //note that makeRequest waits for the socket to close, but in this case it doesn't
+    }
+
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         //testFriendRequests();
         //testFiles();
         //testSendMessage();
         //makeConversation();
-        testGetMessages();
+        //testGetMessages();
+
+        testOnline();
 
         /*
         String body;

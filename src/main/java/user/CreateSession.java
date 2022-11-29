@@ -23,7 +23,7 @@ public class CreateSession extends RequestHandler {
         return false;
     }
 
-    public Response run() throws SQLException, InterruptedException {
+    public Response run() throws SQLException {
 
         try (var conn = Database.getConnection()) {
 

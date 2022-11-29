@@ -46,8 +46,8 @@ public class SessionManager {
         idToTokenList = new HashMap<>();
     }
 
-    public void cleanExpiredSessions() throws InterruptedException {
-        sema.acquire();
+    public void cleanExpiredSessions() {
+        sema.acquireUninterruptibly();
         var toRemove = new ArrayList<SessionData>();
         for (var session : tokenToSession.values()) {
             if (session.isExpired()) {
@@ -60,8 +60,8 @@ public class SessionManager {
         sema.release();
     }
 
-    public String createSession(long id) throws InterruptedException {
-        sema.acquire();
+    public String createSession(long id) {
+        sema.acquireUninterruptibly();
         var token = "";
         do {
             token = makeToken();
@@ -79,15 +79,15 @@ public class SessionManager {
         return token;
     }
 
-    public boolean hasSession(String token) throws InterruptedException {
-        sema.acquire();
+    public boolean hasSession(String token) {
+        sema.acquireUninterruptibly();
         var has = tokenToSession.containsKey(token);
         sema.release();
         return has;
     }
 
-    public SessionData getSessionData(String token) throws InterruptedException {
-        sema.acquire();
+    public SessionData getSessionData(String token) {
+        sema.acquireUninterruptibly();
         var data = tokenToSession.get(token);
         sema.release();
         return data;
@@ -103,8 +103,8 @@ public class SessionManager {
         }
     }
 
-    public void removeSession(SessionData session) throws InterruptedException {
-        sema.acquire();
+    public void removeSession(SessionData session) {
+        sema.acquireUninterruptibly();
         removeSessionImpl(session);
         sema.release();
     }

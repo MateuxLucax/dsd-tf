@@ -29,6 +29,7 @@ public class ConnectionHandler extends Thread {
                 var factory = ctx.responseFactory();
 
                 Optional<Response> responseToWrite = Optional.empty();
+                Optional<Runnable> afterResponseWritten = Optional.empty();
                 var shouldCloseSocket = true;
 
                 try {
@@ -62,6 +63,8 @@ public class ConnectionHandler extends Thread {
                             }
                         }
 
+                        afterResponseWritten = Optional.of(handler::afterResponseWritten);
+
                         if (responseToWrite.isEmpty()) {
                             responseToWrite = Optional.of(handler.run());
                         }
@@ -69,7 +72,7 @@ public class ConnectionHandler extends Thread {
                         shouldCloseSocket = !handler.keepSocketOpen();
                     }
 
-                } catch (IOException | SQLException | InterruptedException e) {
+                } catch (IOException | SQLException e) {
                     responseToWrite = Optional.of(factory.err("internal", MsgCode.INTERNAL));
                     e.printStackTrace();
                 } catch (MalformedRequestException e) {
@@ -79,6 +82,8 @@ public class ConnectionHandler extends Thread {
                     responseToWrite
                         .orElse(factory.err("internal", MsgCode.NO_RESPONSE))
                         .writeTo(out);
+
+                    afterResponseWritten.ifPresent(Runnable::run);
 
                     if (shouldCloseSocket) {
                         socket.close();

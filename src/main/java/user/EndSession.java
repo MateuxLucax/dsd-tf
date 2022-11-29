@@ -13,7 +13,7 @@ public class EndSession extends RequestHandler {
         super(request, ctx);
     }
 
-    public Response run() throws SQLException, InterruptedException {
+    public Response run() throws SQLException {
         var mgr = ctx.sessionManager();
         var token = request.headers().get("token");
         var session = mgr.getSessionData(token);

@@ -24,7 +24,7 @@ public class GetFriendRequests extends RequestHandler {
     private record FriendRequestData(UserData from, UserData to, String createdAt) {}
 
     @Override
-    public Response run() throws SQLException, InterruptedException {
+    public Response run() throws SQLException {
 
         try (var conn = Database.getConnection()) {
 

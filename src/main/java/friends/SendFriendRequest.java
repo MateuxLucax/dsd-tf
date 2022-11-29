@@ -15,7 +15,7 @@ public class SendFriendRequest extends RequestHandler {
     public record RequestData(long userId) {}
 
     @Override
-    public Response run() throws SQLException, InterruptedException {
+    public Response run() throws SQLException {
 
         var conn = Database.getConnection();
         try {

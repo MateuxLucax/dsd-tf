@@ -26,7 +26,7 @@ public class SendMessage extends RequestHandler {
         String sentAt
     ) {}
 
-    public Response run() throws SQLException, InterruptedException {
+    public Response run() throws SQLException {
         Connection connection = null;
 
         try {
