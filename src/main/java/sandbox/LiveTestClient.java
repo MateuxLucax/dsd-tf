@@ -8,10 +8,12 @@ public class LiveTestClient {
 
     private static class ListenLiveSocket extends Thread {
 
+        private String user;
         private Socket socket;
         private InputStream in;
 
-        public ListenLiveSocket(Socket socket) throws IOException {
+        public ListenLiveSocket(String user, Socket socket) throws IOException {
+            this.user = user;
             this.socket = socket;
             this.in = socket.getInputStream();
         }
@@ -38,8 +40,7 @@ public class LiveTestClient {
                         buf[off++] = (byte) c;
                         if (off == size) {
                             var message = new String(buf, 0, size);
-                            System.out.println("Got live message!");
-                            System.out.println(message);
+                            System.out.println("Live message to " + user + ": " + message);
 
                             readingSize = true;
                             off = 0;
@@ -53,7 +54,7 @@ public class LiveTestClient {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         {
             var body = "{\"username\": \"admin\", \"fullname\": \"Administrator\", \"password\": \"abc\"}";
@@ -74,8 +75,22 @@ public class LiveTestClient {
             // message size) could be missing
 
 
-            var thread = new ListenLiveSocket(liveSocket);
+            var thread = new ListenLiveSocket("admin", liveSocket);
             thread.start();
+        }
+
+        Thread.sleep(2000);
+
+        {
+            var body = "{\"username\": \"dude\", \"fullname\": \"some dude\", \"password\": \"password\"}";
+            TestClient.makeRequest("create-user", body, null);
+
+            var token = TestClient.loginGetToken("dude", "password");
+
+            var liveSocket = new Socket("localhost", 8080);
+            TestClient.makeRequestWith(liveSocket, "go-online", "", token, new String[]{});
+
+            new ListenLiveSocket("dude", liveSocket).start();
         }
 
     }

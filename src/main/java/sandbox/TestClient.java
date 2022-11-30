@@ -63,10 +63,6 @@ public class TestClient {
                     if (line.isBlank()) {
                         readingHeaders = false;
                         bodySize = Integer.parseInt(headers.get("body-size"));
-
-                        System.out.println("Finished reading headers");
-                        System.out.println("body size: " + bodySize);
-
                     } else {
                         var kv = line.split(" ");
                         var k = kv[0].toLowerCase();
@@ -79,7 +75,6 @@ public class TestClient {
             }
             else {
                 if (off == bodySize) {
-                    System.out.println("body ended");
                     var responseBody = new String(buf, 0, off);
                     sb.append(responseBody);
                     break;

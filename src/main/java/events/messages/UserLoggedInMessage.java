@@ -1,9 +1,9 @@
 package events.messages;
 
-public class UserLoggedMessage extends EventMessage {
+public class UserLoggedInMessage extends EventMessage {
     private final long userID;
-    public UserLoggedMessage(long userID) {
-        super("user-logged");
+    public UserLoggedInMessage(long userID) {
+        super("user-logged-in");
         this.userID = userID;
     }
     public long userID() { return userID; }

@@ -3,7 +3,7 @@ package events;
 import com.google.gson.Gson;
 import events.messages.EventMessage;
 import events.messages.OnlineUserListMessage;
-import events.messages.UserLoggedMessage;
+import events.messages.UserLoggedInMessage;
 
 import java.io.IOException;
 import java.util.*;
@@ -86,7 +86,7 @@ public class EventQueue {
                     .computeIfAbsent(userID, id -> new HashMap<>())
                     .put(token, socket);
 
-                var gMessage = new UserLoggedMessage(userID);
+                var gMessage = new UserLoggedInMessage(userID);
                 globalMessages.add(gMessage);
 
                 var onlineUsers = new ArrayList<>(onlineSockets.keySet());
