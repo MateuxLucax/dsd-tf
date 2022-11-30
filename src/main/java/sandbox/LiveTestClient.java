@@ -67,6 +67,13 @@ public class LiveTestClient {
             // In the client we need to make sure that we only start reading from
             // the live socket after we've read the whole response
 
+            // Also, we need to be very careful in the usual response reading code
+            // to guarantee that it does not read any more characters than it needs
+
+            // Otherwise when we get a message the first character (part of the
+            // message size) could be missing
+
+
             var thread = new ListenLiveSocket(liveSocket);
             thread.start();
         }

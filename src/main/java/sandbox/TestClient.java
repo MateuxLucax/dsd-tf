@@ -8,10 +8,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.HashMap;
 
 public class TestClient {
 
-    public static String makeRequestWith(Socket socket, String operation, String body, String token, String[] additionalHeaders) throws IOException {
+    public static String makeRequestWith(
+        Socket socket,
+        String operation,
+        String body,
+        String token,
+        String[] additionalHeaders
+    )
+        throws IOException
+    {
         var request = "";
         request += "operation " + operation + '\n';
         request += "body-size " + body.getBytes().length + '\n';
@@ -30,18 +39,59 @@ public class TestClient {
         var out = socket.getOutputStream();
         out.write(request.getBytes());
 
-        var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        var line = "";
+        var in = socket.getInputStream();
 
-        // TODO for the LiveTestClient we need to parse the response correctly
-        // in particular stop after reading body-size bytes in the body
+        var readingHeaders = true;
+
+        var buf = new byte[8192];
+        var off = 0;
+
+        var headers = new HashMap<String, String>();
 
         var sb = new StringBuilder();
-        System.out.println("---- RESPONSE ----");
-        while ((line = in.readLine()) != null) {
-            System.out.println(line);
-            sb.append(line).append('\n');
+
+        var bodySize = 0;
+
+        while (true) {
+            if (readingHeaders) {
+                var c = in.read();
+                if (c == '\n') {
+                    var line = new String(buf, 0, off);
+                    off = 0;
+
+                    sb.append(line).append('\n');
+                    if (line.isBlank()) {
+                        readingHeaders = false;
+                        bodySize = Integer.parseInt(headers.get("body-size"));
+
+                        System.out.println("Finished reading headers");
+                        System.out.println("body size: " + bodySize);
+
+                    } else {
+                        var kv = line.split(" ");
+                        var k = kv[0].toLowerCase();
+                        var v = kv[1];
+                        headers.put(k, v);
+                    }
+                } else {
+                    buf[off++] = (byte) c;
+                }
+            }
+            else {
+                if (off == bodySize) {
+                    System.out.println("body ended");
+                    var responseBody = new String(buf, 0, off);
+                    sb.append(responseBody);
+                    break;
+                } else {
+                    buf[off++] = (byte) in.read();
+                }
+            }
         }
+
+        System.out.println("---- RESPONSE ----");
+        System.out.println(sb.toString());
+
         return sb.toString();
     }
 
@@ -184,14 +234,6 @@ public class TestClient {
         makeRequest("get-messages", getmsg(1, 14, 3), tok);
     }
 
-    public static void testOnline() throws IOException, InterruptedException {
-        var body = "{\"username\": \"dude\", \"fullname\": \"john dude\", \"password\": \"123\"}";
-        makeRequest("create-user", body, null);
-        var tok = loginGetToken("dude", "123");
-        makeRequest("go-online", "", tok);
-        //note that makeRequest waits for the socket to close, but in this case it doesn't
-    }
-
     public static void main(String[] args) throws IOException, InterruptedException {
 
         //testFriendRequests();
@@ -200,7 +242,6 @@ public class TestClient {
         //makeConversation();
         //testGetMessages();
 
-        testOnline();
 
         /*
         String body;
