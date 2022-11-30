@@ -26,6 +26,16 @@ public class EventQueue {
     private final Map<Long, Queue<EventMessage>> messagesPerUser;
     private final Queue<MessageToRetry> messagesToRetry;
 
+    // TODO the online-user-list is being sent to all connections a user has
+    // but it should be sent only to the new connection
+    // so we need a Map<Long, Map<String, Queue<EventMessage>> messagesPerConnection
+
+    // TODO make a ConnectionID / LiveSocketID record or something
+    // <Long, String> pair (user id, token)
+    // so we don't need to nest maps
+    // then refactor onlineSockets and messagesPerConnection to use that
+    // records probably already take care of equals() and hashCode(), but check
+
     public EventQueue(Gson gson) {
         this.gson = gson;
 
@@ -86,14 +96,23 @@ public class EventQueue {
                 var socket = conn.socket();
                 var userID = socket.userID();
                 var token = socket.userToken();
-                onlineSockets
-                    .computeIfAbsent(userID, id -> new HashMap<>())
-                    .put(token, socket);
 
-                // TODO only add this message when the user wasn't previously online?
-                // He could've just logged in on _another_ device
-                var gMessage = new UserOnlineMessage(userID);
-                globalMessages.add(gMessage);
+                var userWasAlreadyOnline = true;
+
+                var userSockets = onlineSockets.get(userID);
+
+                if (userSockets == null) {
+                    userWasAlreadyOnline = false;
+                    userSockets = new HashMap<>();
+                    onlineSockets.put(userID, userSockets);
+                }
+
+                userSockets.put(token, socket);
+
+                if (!userWasAlreadyOnline) {
+                    var gMessage = new UserOnlineMessage(userID);
+                    globalMessages.add(gMessage);
+                }
 
                 var onlineUsers = new ArrayList<>(onlineSockets.keySet());
                 var uMessage = new OnlineUserListMessage(onlineUsers);
@@ -132,6 +151,11 @@ public class EventQueue {
 
             }
         }
+
+        // TODO what should the EventQueue do if the client closes one of the live sockets?
+        // Currently we probably get an IOException
+        // Maybe we could test for .isClosed() and then treat it as a connection removed event
+        // (remove the socket, broadcast that the user got offline if that was their last connection etc.)
 
         while (!messagesToRetry.isEmpty()) {
             var message = messagesToRetry.remove();

@@ -103,6 +103,18 @@ public class LiveTestClient {
         }
 
         Thread.sleep(sleepBetween/2);
+        System.out.println("Admin will login and go online on another device. 'dude' shouldn't get the user-logged-in message again");
+        Thread.sleep(sleepBetween/2);
+
+        {
+            var anotherAdminToken = TestClient.loginGetToken("admin", "abc");
+            var liveSocket = new Socket("localhost", 8080);
+            TestClient.makeRequestWith(liveSocket, "go-online", "", anotherAdminToken, new String[]{});
+
+            new ListenLiveSocket("admin (ON ANOTHER DEVICE)", liveSocket).start();
+        }
+
+        Thread.sleep(sleepBetween/2);
         System.out.println("Now admin is about to go offline");
         Thread.sleep(sleepBetween/2);
 
