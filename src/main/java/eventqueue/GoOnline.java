@@ -1,5 +1,6 @@
-package events;
+package eventqueue;
 
+import eventqueue.events.ConnectionAddedEvent;
 import infra.SharedContext;
 import infra.request.*;
 

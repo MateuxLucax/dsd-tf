@@ -1,6 +1,7 @@
 package infra.request;
 
-import events.GoOnline;
+import eventqueue.GoOffline;
+import eventqueue.GoOnline;
 import files.GetFile;
 import files.PutFile;
 import friends.*;
@@ -50,6 +51,7 @@ public class OperationLookup {
         map.put("get-messages", GetMessages::new);
 
         map.put("go-online", GoOnline::new);
+        map.put("go-offline", GoOffline::new);
     }
 
     public static Collection<String> names() {

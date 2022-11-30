@@ -1,6 +1,6 @@
 package infra;
 
-import events.EventLoop;
+import eventqueue.EventLoop;
 import infra.session.SessionCleaner;
 import infra.session.SessionManager;
 

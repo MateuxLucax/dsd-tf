@@ -2,7 +2,7 @@ package infra;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import events.EventQueue;
+import eventqueue.EventQueue;
 import helpers.RecordTypeAdapterFactory;
 import infra.request.ResponseFactory;
 import infra.session.SessionManager;

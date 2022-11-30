@@ -1,9 +1,13 @@
-package events;
+package eventqueue;
 
 import com.google.gson.Gson;
-import events.messages.EventMessage;
-import events.messages.OnlineUserListMessage;
-import events.messages.UserLoggedInMessage;
+import eventqueue.events.ConnectionAddedEvent;
+import eventqueue.events.ConnectionRemovedEvent;
+import eventqueue.events.Event;
+import eventqueue.messages.EventMessage;
+import eventqueue.messages.OnlineUserListMessage;
+import eventqueue.messages.UserOfflineMessage;
+import eventqueue.messages.UserOnlineMessage;
 
 import java.io.IOException;
 import java.util.*;
@@ -86,7 +90,9 @@ public class EventQueue {
                     .computeIfAbsent(userID, id -> new HashMap<>())
                     .put(token, socket);
 
-                var gMessage = new UserLoggedInMessage(userID);
+                // TODO only add this message when the user wasn't previously online?
+                // He could've just logged in on _another_ device
+                var gMessage = new UserOnlineMessage(userID);
                 globalMessages.add(gMessage);
 
                 var onlineUsers = new ArrayList<>(onlineSockets.keySet());
@@ -94,6 +100,36 @@ public class EventQueue {
                 messagesPerUser
                     .computeIfAbsent(userID, id -> new ArrayDeque<>())
                     .add(uMessage);
+            }
+            else if (event instanceof ConnectionRemovedEvent conn) {
+                var userID = conn.userID();
+                var token = conn.token();
+
+                var userNotOnlineAnymore = false;
+
+                var userSockets = onlineSockets.get(userID);
+                if (userSockets != null) {
+                    var socketDisconnected = userSockets.remove(token);
+                    if (socketDisconnected != null) {
+                        // Just close the socket, no success message or anything
+                        // Client immediatly stops receiving messages
+                        // TODO is this the right to do?
+                        socketDisconnected.close();
+                    }
+                    // If that was the only connection the user had,
+                    // the user is not online anymore
+                    if (userSockets.isEmpty()) {
+                        onlineSockets.remove(userID);
+                        userNotOnlineAnymore = true;
+                    }
+                }
+
+                if (userNotOnlineAnymore) {
+                    var gMessage = new UserOfflineMessage(userID);
+                    globalMessages.add(gMessage);
+                }
+
+
             }
         }
 

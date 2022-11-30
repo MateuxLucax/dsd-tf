@@ -40,7 +40,7 @@ public class LiveTestClient {
                         buf[off++] = (byte) c;
                         if (off == size) {
                             var message = new String(buf, 0, size);
-                            System.out.println("Live message to " + user + ": " + message);
+                            System.out.println("----- LIVE MESSAGE TO " + user + " -----\n" + message);
 
                             readingSize = true;
                             off = 0;
@@ -56,14 +56,19 @@ public class LiveTestClient {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
+        var adminToken = "";
+        var dudeToken = "";
+
+        var sleepBetween = 5000;
+
         {
             var body = "{\"username\": \"admin\", \"fullname\": \"Administrator\", \"password\": \"abc\"}";
             TestClient.makeRequest("create-user", body, null);
 
-            var token = TestClient.loginGetToken("admin", "abc");
+            adminToken = TestClient.loginGetToken("admin", "abc");
 
             var liveSocket = new Socket("localhost", 8080);
-            TestClient.makeRequestWith(liveSocket, "go-online", "", token, new String[]{});
+            TestClient.makeRequestWith(liveSocket, "go-online", "", adminToken, new String[]{});
 
             // In the client we need to make sure that we only start reading from
             // the live socket after we've read the whole response
@@ -79,18 +84,28 @@ public class LiveTestClient {
             thread.start();
         }
 
-        Thread.sleep(2000);
+        Thread.sleep(sleepBetween/2);
+        System.out.println("Now dude is about to go online...");
+        Thread.sleep(sleepBetween/2);
 
         {
             var body = "{\"username\": \"dude\", \"fullname\": \"some dude\", \"password\": \"password\"}";
             TestClient.makeRequest("create-user", body, null);
 
-            var token = TestClient.loginGetToken("dude", "password");
+            dudeToken = TestClient.loginGetToken("dude", "password");
 
             var liveSocket = new Socket("localhost", 8080);
-            TestClient.makeRequestWith(liveSocket, "go-online", "", token, new String[]{});
+            TestClient.makeRequestWith(liveSocket, "go-online", "", dudeToken, new String[]{});
 
             new ListenLiveSocket("dude", liveSocket).start();
+        }
+
+        Thread.sleep(sleepBetween/2);
+        System.out.println("Now admin is about to go offline");
+        Thread.sleep(sleepBetween/2);
+
+        {
+            TestClient.makeRequest("go-offline", "", adminToken);
         }
 
     }

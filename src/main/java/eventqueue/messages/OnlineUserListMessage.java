@@ -1,4 +1,4 @@
-package events.messages;
+package eventqueue.messages;
 
 import java.util.Collection;
 
