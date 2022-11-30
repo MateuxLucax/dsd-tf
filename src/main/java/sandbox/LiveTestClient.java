@@ -47,6 +47,8 @@ public class LiveTestClient {
                         }
                     }
                 }
+
+                System.out.println(" >>> Live socket "+user+" closed ");
             } catch (Exception e) {
                 System.err.println("ListenLiveSocket exception!");
                 System.err.println(e);
