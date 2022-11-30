@@ -4,10 +4,7 @@ import com.google.gson.Gson;
 import eventqueue.events.ConnectionAddedEvent;
 import eventqueue.events.ConnectionRemovedEvent;
 import eventqueue.events.Event;
-import eventqueue.messages.EventMessage;
-import eventqueue.messages.OnlineUserListMessage;
-import eventqueue.messages.UserOfflineMessage;
-import eventqueue.messages.UserOnlineMessage;
+import eventqueue.messages.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -27,6 +24,7 @@ public class EventQueue {
     private final Queue<Event> eventsToProcess;
     private final Queue<EventMessage> globalMessages;
     private final Map<Long, Queue<EventMessage>> messagesPerUser;
+    private final Queue<MessageToRetry> messagesToRetry;
 
     public EventQueue(Gson gson) {
         this.gson = gson;
@@ -39,6 +37,7 @@ public class EventQueue {
         eventsToProcess = new ArrayDeque<>();
         globalMessages = new ArrayDeque<>();
         messagesPerUser = new HashMap<>();
+        messagesToRetry = new ArrayDeque<>();
     }
 
     public void enqueue(Event e) {
@@ -67,6 +66,7 @@ public class EventQueue {
         return buf;
     }
 
+    // TODO deal with the IOException when doing socket.outputStream().write(bytes) instead of propagating it up
     public void processEvents() throws IOException {
         // All we do with the queue is transfer it to another local queue for processing
         // This way, other threads can keep enqueueing events to it, at the same time we do the processing
@@ -133,6 +133,32 @@ public class EventQueue {
             }
         }
 
+        while (!messagesToRetry.isEmpty()) {
+            var message = messagesToRetry.remove();
+
+            if (!message.attempt()) {
+                continue;
+            }
+            System.out.println("Retrying message " + message);
+
+            var bytes = prepareMessage(message.message());
+
+            var userSockets = onlineSockets.get(message.userID());
+            if (userSockets != null) {
+                var socket = userSockets.get(message.userToken());
+                if (socket != null) {
+                    if (socket.ioTryAcquire()) {
+                        socket.outputStream().write(bytes);
+                        socket.ioRelease();
+                    }
+                    else {
+                        messagesToRetry.add(message);
+                    }
+                }
+            }
+
+        }
+
         while (!globalMessages.isEmpty()) {
             var message = globalMessages.remove();
             System.out.println("Broadcasting message " + message);
@@ -143,7 +169,10 @@ public class EventQueue {
                         socket.outputStream().write(bytes);
                         socket.ioRelease();
                     }
-                    // TODO deal with not being able to acquire the streams
+                    else {
+                        System.out.println("Couldn't acquire the socket, will retry later");
+                        messagesToRetry.add(new MessageToRetry(socket.userID(), socket.userToken(), message));
+                    }
                 }
             }
         }
@@ -156,11 +185,19 @@ public class EventQueue {
                 System.out.println("Sending message " + message + " to " + userID);
                 var bytes = prepareMessage(message);
                 for (var socket : onlineSockets.get(userID).values()) {
-                    if (socket.ioTryAcquire()) {
+
+                    var acquired = socket.ioTryAcquire();
+                    // For testing messages to retry
+                    //var acquired = false;
+
+                    if (acquired) {
                         socket.outputStream().write(bytes);
                         socket.ioRelease();
                     }
-                    // TODO deal with not being able to acquire the streams
+                    else {
+                        System.out.println("Couldn't acquire the socket, will retry later");
+                        messagesToRetry.add(new MessageToRetry(socket.userID(), socket.userToken(), message));
+                    }
                 }
             }
         }

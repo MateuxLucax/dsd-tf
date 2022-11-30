@@ -8,4 +8,12 @@ public class UserOfflineMessage extends EventMessage {
         super("user-offline");
         this.userID = userID;
     }
+
+    @Override
+    public String toString() {
+        return "UserOfflineMessage{" +
+        "userID=" + userID +
+        ", type='" + type + '\'' +
+        '}';
+    }
 }

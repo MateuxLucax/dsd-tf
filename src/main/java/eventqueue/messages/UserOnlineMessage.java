@@ -8,4 +8,12 @@ public class UserOnlineMessage extends EventMessage {
         super("user-online");
         this.userID = userID;
     }
+
+    @Override
+    public String toString() {
+        return "UserOnlineMessage{" +
+        "userID=" + userID +
+        ", type='" + type + '\'' +
+        '}';
+    }
 }
