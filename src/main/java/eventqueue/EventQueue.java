@@ -23,18 +23,8 @@ public class EventQueue {
     // (constructed once, then reused along many processEvents() calls, instead of constructed again at each call)
     private final Queue<Event> eventsToProcess;
     private final Queue<EventMessage> globalMessages;
-    private final Map<Long, Queue<EventMessage>> messagesPerUser;
+    private final Map<IdTokenPair, Queue<EventMessage>> messagesPerConnection;
     private final Queue<MessageToRetry> messagesToRetry;
-
-    // TODO the online-user-list is being sent to all connections a user has
-    // but it should be sent only to the new connection
-    // so we need a Map<Long, Map<String, Queue<EventMessage>> messagesPerConnection
-
-    // TODO make a ConnectionID / LiveSocketID record or something
-    // <Long, String> pair (user id, token)
-    // so we don't need to nest maps
-    // then refactor onlineSockets and messagesPerConnection to use that
-    // records probably already take care of equals() and hashCode(), but check
 
     public EventQueue(Gson gson) {
         this.gson = gson;
@@ -46,7 +36,7 @@ public class EventQueue {
 
         eventsToProcess = new ArrayDeque<>();
         globalMessages = new ArrayDeque<>();
-        messagesPerUser = new HashMap<>();
+        messagesPerConnection = new HashMap<>();
         messagesToRetry = new ArrayDeque<>();
     }
 
@@ -116,8 +106,8 @@ public class EventQueue {
 
                 var onlineUsers = new ArrayList<>(onlineSockets.keySet());
                 var uMessage = new OnlineUserListMessage(onlineUsers);
-                messagesPerUser
-                    .computeIfAbsent(userID, id -> new ArrayDeque<>())
+                messagesPerConnection
+                    .computeIfAbsent(new IdTokenPair(userID, token), pair -> new ArrayDeque<>())
                     .add(uMessage);
             }
             else if (event instanceof ConnectionRemovedEvent conn) {
@@ -201,32 +191,42 @@ public class EventQueue {
             }
         }
 
-        for (var entry : messagesPerUser.entrySet()) {
-            var userID = entry.getKey();
+        for (var entry : messagesPerConnection.entrySet()) {
+
+            var idTokenPair = entry.getKey();
             var messages = entry.getValue();
+
             while (!messages.isEmpty()) {
                 var message = messages.remove();
-                System.out.println("Sending message " + message + " to " + userID);
+
+                var userID = idTokenPair.userID();
+                var token = idTokenPair.token();
+
+                System.out.println("Sending message " + message + " to " + userID + " on " + token);
                 var bytes = prepareMessage(message);
-                for (var socket : onlineSockets.get(userID).values()) {
 
-                    var acquired = socket.ioTryAcquire();
-                    // For testing messages to retry
-                    //var acquired = false;
+                var userSockets = onlineSockets.get(userID);
+                if (userSockets == null) {
+                    continue;
+                }
 
-                    if (acquired) {
-                        socket.outputStream().write(bytes);
-                        socket.ioRelease();
-                    }
-                    else {
-                        System.out.println("Couldn't acquire the socket, will retry later");
-                        messagesToRetry.add(new MessageToRetry(socket.userID(), socket.userToken(), message));
-                    }
+                var socket = userSockets.get(token);
+                if (socket == null) {
+                    continue;
+                }
+
+                if (socket.ioTryAcquire()) {
+                    socket.outputStream().write(bytes);
+                    socket.ioRelease();
+                }
+                else {
+                    System.out.println("Couldn't acquire the socket, will retry later");
+                    messagesToRetry.add(new MessageToRetry(socket.userID(), socket.userToken(), message));
                 }
             }
         }
 
-        messagesPerUser.clear();
+        messagesPerConnection.clear();
     }
 
 }

@@ -59,6 +59,7 @@ public class LiveTestClient {
     public static void main(String[] args) throws IOException, InterruptedException {
 
         var adminToken = "";
+        var anotherAdminToken = "";
         var dudeToken = "";
 
         var sleepBetween = 5000;
@@ -107,7 +108,7 @@ public class LiveTestClient {
         Thread.sleep(sleepBetween/2);
 
         {
-            var anotherAdminToken = TestClient.loginGetToken("admin", "abc");
+            anotherAdminToken = TestClient.loginGetToken("admin", "abc");
             var liveSocket = new Socket("localhost", 8080);
             TestClient.makeRequestWith(liveSocket, "go-online", "", anotherAdminToken, new String[]{});
 
@@ -120,6 +121,14 @@ public class LiveTestClient {
 
         {
             TestClient.makeRequest("go-offline", "", adminToken);
+        }
+
+        Thread.sleep(sleepBetween/2);
+        System.out.println("Now admin on another device is about to go offline, so 'dude' should get a 'user-offline' message");
+        Thread.sleep(sleepBetween/2);
+
+        {
+            TestClient.makeRequest("go-offline", "", anotherAdminToken);
         }
 
     }

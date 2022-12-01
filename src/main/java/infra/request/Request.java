@@ -1,5 +1,7 @@
 package infra.request;
 
+import infra.session.SessionManager;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -52,6 +54,13 @@ public class Request {
 
                 if (key.isBlank()) throw MalformedRequestException.invalidHeaderFormat(count);
                 if (val.isBlank()) throw MalformedRequestException.invalidHeaderFormat(count);
+
+                // FIX
+                //if (key.equals("token")) {
+                //    if (!SessionManager.tokenSyntaxValid(val)) {
+                //        throw MalformedRequestException.invalidHeaderValue("token");
+                //    }
+                //}
 
                 // TODO also detect invalid characters in header key
                 //  only alphanumeric [a-zA-Z0-9] and dash -
