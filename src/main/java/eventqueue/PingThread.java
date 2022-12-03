@@ -14,7 +14,7 @@ public class PingThread extends Thread {
     private static final int MINUTE = 60 * SECOND;
 
     //private static final int INTERVAL = 5 * MINUTE;  // In "production"
-    private static final int INTERVAL = 20 * SECOND;  // For testing
+    private static final int INTERVAL = 7 * SECOND;  // For testing
 
     private static final int TIMEOUT = 2 * SECOND;
 

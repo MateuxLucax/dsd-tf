@@ -107,6 +107,7 @@ public class EventQueue {
             return;
         }
         // Semaphore acquired, don't forget to release
+        // really wish I could just defer socketsSemaphore.release(); like in Go
 
         var userID = event.userID();
         var token = event.token();
