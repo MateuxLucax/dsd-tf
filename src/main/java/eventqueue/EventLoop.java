@@ -19,7 +19,7 @@ public class EventLoop extends Thread {
             while (!isInterrupted()) {
 
                 var start = System.currentTimeMillis();
-                System.out.println("Processing events... (last processing took "+processingTime+"ms)");
+                //System.out.println("Processing events... (last processing took "+processingTime+"ms)");
 
                 try {
                     this.eventQueue.processEvents();
