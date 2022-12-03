@@ -4,6 +4,9 @@ package infra.session;
 // Cannot create sessions while expired sessions are being cleaned
 // Inefficient, scales badly, but it sure works correctly
 
+import eventqueue.EventQueue;
+import eventqueue.events.ConnectionRemovedEvent;
+
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.Semaphore;
@@ -38,9 +41,13 @@ public class SessionManager {
     private final Map<String, SessionData> tokenToSession;
     private final Map<Long, List<String>> idToTokenList;
 
-    public SessionManager() {
+    private final EventQueue eventQueue;
+
+    public SessionManager(EventQueue eventQueue) {
         var fair = true;
         sema = new Semaphore(1, fair);
+
+        this.eventQueue = eventQueue;
 
         tokenToSession = new HashMap<>();
         idToTokenList = new HashMap<>();
@@ -101,6 +108,9 @@ public class SessionManager {
         if (tokenList != null) {
             tokenList.remove(token);
         }
+
+        var event = new ConnectionRemovedEvent(session.getUserId(), session.getToken());
+        eventQueue.enqueue(event);
     }
 
     public void removeSession(SessionData session) {

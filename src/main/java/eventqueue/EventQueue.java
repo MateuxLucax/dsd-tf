@@ -14,68 +14,166 @@ public class EventQueue {
 
     private final Gson gson;
 
-    private final Semaphore sema;
+    private final Semaphore queueSemaphore;
     private final Queue<Event> newEvents;
 
+    private final Semaphore socketsSemaphore;
     private final Map<Long, Map<String, LiveSocket>> onlineSockets;
 
     // hoisted from processEvents() scope to instance scope for reusing the memory
     // (constructed once, then reused along many processEvents() calls, instead of constructed again at each call)
+
     private final Queue<Event> eventsToProcess;
-    private final Queue<EventMessage> globalMessages;
-    private final Map<IdTokenPair, Queue<EventMessage>> messagesPerConnection;
+    private final Queue<Event> eventsToRetry;
+
+    private final Queue<LiveMessage> globalMessages;
+    private final Map<IdTokenPair, Queue<LiveMessage>> messagesPerConnection;
     private final Queue<MessageToRetry> messagesToRetry;
 
     public EventQueue(Gson gson) {
         this.gson = gson;
 
-        sema = new Semaphore(1, true);
+        // semaphore to deal with contention from multiple RequestHandlers enqueueing events
+        queueSemaphore = new Semaphore(1, true);
         newEvents = new ArrayDeque<>();
 
+        // semaphore to deal with contention among
+        // - processEvents() adding/removing connections from Connection{Added|Removed}Event
+        // - PingThread asking the EventQueue to transfer a copy of the current onlineSockets
+        socketsSemaphore = new Semaphore(1, true);
         onlineSockets = new HashMap<>();
 
         eventsToProcess = new ArrayDeque<>();
+        eventsToRetry = new ArrayDeque<>();
+
         globalMessages = new ArrayDeque<>();
         messagesPerConnection = new HashMap<>();
         messagesToRetry = new ArrayDeque<>();
     }
 
     public void enqueue(Event e) {
-        System.out.printf("EventQueue: Acquring sema for %s\n", e);
-        sema.acquireUninterruptibly();
-        System.out.printf("EventQueue: Enqueueing %s\n", e);
+        System.out.println("EventQueue: Enqueueing " + e);
+        queueSemaphore.acquireUninterruptibly();
         newEvents.add(e);
-        sema.release();
+        queueSemaphore.release();
     }
 
     public byte[] prepareMessage(Object message) {
-        return prepareMessage(gson.toJson(message));
-    }
-
-    public static byte[] prepareMessage(String message) {
-        var messageBytes = message.getBytes();
-        var sizeBytes = Integer.toString(messageBytes.length).getBytes();
-
-        var buf = new byte[sizeBytes.length + 1 + messageBytes.length];
-        var off = 0;
-
-        for (var b : sizeBytes) buf[off++] = b;
-        buf[off++] = ' ';
-        for (var b : messageBytes) buf[off++] = b;
-
-        return buf;
+        return LiveSocket.prepareMessage(gson.toJson(message));
     }
 
     // TODO deal with the IOException when doing socket.outputStream().write(bytes) instead of propagating it up
+    //  in all event process methods
+
+    public void processConnectionAdded(ConnectionAddedEvent event) {
+        if (!socketsSemaphore.tryAcquire()) {
+            eventsToRetry.add(event);
+            return;
+        }
+
+        var socket = event.socket();
+        var userID = socket.userID();
+        var token = socket.userToken();
+
+        var userWasAlreadyOnline = true;
+
+        var userSockets = onlineSockets.get(userID);
+
+        if (userSockets == null) {
+            userWasAlreadyOnline = false;
+            userSockets = new HashMap<>();
+            onlineSockets.put(userID, userSockets);
+        }
+
+        userSockets.put(token, socket);
+
+        if (!userWasAlreadyOnline) {
+            var gMessage = new UserOnlineMessage(userID);
+            globalMessages.add(gMessage);
+        }
+
+        var onlineUsers = new ArrayList<>(onlineSockets.keySet());
+        var uMessage = new OnlineUserListMessage(onlineUsers);
+        messagesPerConnection
+            .computeIfAbsent(new IdTokenPair(userID, token), pair -> new ArrayDeque<>())
+            .add(uMessage);
+
+        socketsSemaphore.release();
+    }
+
+    public void processConnectionRemoved(ConnectionRemovedEvent event) throws IOException {
+        if (!socketsSemaphore.tryAcquire()) {
+            eventsToRetry.add(event);
+            return;
+        }
+        // Semaphore acquired, don't forget to release
+
+        var userID = event.userID();
+        var token = event.token();
+
+        var userNotOnlineAnymore = false;
+
+        var userSockets = onlineSockets.get(userID);
+        if (userSockets != null) {
+            System.out.println("  user has sockets: " + userSockets);
+            var socketDisconnected = userSockets.remove(token);
+            if (socketDisconnected != null) {
+                System.out.println("  token match, closing socket");
+                // Just close the socket, no success message or anything
+                // Client immediatly stops receiving messages
+                // TODO is this the right to do?
+                socketDisconnected.close();
+            } else System.out.println("  NO token match");
+            // If that was the only connection the user had,
+            // the user is not online anymore
+            if (userSockets.isEmpty()) {
+                System.out.println("  NO remaining connections");
+                onlineSockets.remove(userID);
+                userNotOnlineAnymore = true;
+            } else System.out.println("  has remaining connections");
+        } else System.out.println("  user has NO sockets");
+
+        if (userNotOnlineAnymore) {
+            System.out.println("  NOT online anymore");
+            var gMessage = new UserOfflineMessage(userID);
+            globalMessages.add(gMessage);
+        } else System.out.println("  still online");
+
+        socketsSemaphore.release();
+    }
+
+    public Map<Long, Map<String, LiveSocket>> copySockets() {
+        socketsSemaphore.acquireUninterruptibly();
+        var copy = new HashMap<Long, Map<String, LiveSocket>>();
+        for (var userEntry : onlineSockets.entrySet()) {
+            var id      = userEntry.getKey();
+            var sockets = userEntry.getValue();
+            var socketsCopy = new HashMap<String, LiveSocket>();
+            for (var sessionEntry : sockets.entrySet()) {
+                var token  = sessionEntry.getKey();
+                var socket = sessionEntry.getValue();
+                socketsCopy.put(token, socket);
+            }
+            copy.put(id, socketsCopy);
+        }
+        socketsSemaphore.release();
+        return copy;
+    }
+
     public void processEvents() throws IOException {
+
+        while (!eventsToRetry.isEmpty()) {
+            eventsToProcess.add(eventsToRetry.remove());
+        }
+
         // All we do with the queue is transfer it to another local queue for processing
         // This way, other threads can keep enqueueing events to it, at the same time we do the processing
         // I.e. we can process the events without blocking the event queue
-        sema.acquireUninterruptibly();
+        queueSemaphore.acquireUninterruptibly();
         while (!newEvents.isEmpty()) {
             eventsToProcess.add(newEvents.remove());
         }
-        sema.release();
+        queueSemaphore.release();
 
         while (!eventsToProcess.isEmpty()) {
             var event = eventsToProcess.remove();
@@ -83,62 +181,9 @@ public class EventQueue {
             System.out.println("Processing event " + event);
 
             if (event instanceof ConnectionAddedEvent conn) {
-                var socket = conn.socket();
-                var userID = socket.userID();
-                var token = socket.userToken();
-
-                var userWasAlreadyOnline = true;
-
-                var userSockets = onlineSockets.get(userID);
-
-                if (userSockets == null) {
-                    userWasAlreadyOnline = false;
-                    userSockets = new HashMap<>();
-                    onlineSockets.put(userID, userSockets);
-                }
-
-                userSockets.put(token, socket);
-
-                if (!userWasAlreadyOnline) {
-                    var gMessage = new UserOnlineMessage(userID);
-                    globalMessages.add(gMessage);
-                }
-
-                var onlineUsers = new ArrayList<>(onlineSockets.keySet());
-                var uMessage = new OnlineUserListMessage(onlineUsers);
-                messagesPerConnection
-                    .computeIfAbsent(new IdTokenPair(userID, token), pair -> new ArrayDeque<>())
-                    .add(uMessage);
-            }
-            else if (event instanceof ConnectionRemovedEvent conn) {
-                var userID = conn.userID();
-                var token = conn.token();
-
-                var userNotOnlineAnymore = false;
-
-                var userSockets = onlineSockets.get(userID);
-                if (userSockets != null) {
-                    var socketDisconnected = userSockets.remove(token);
-                    if (socketDisconnected != null) {
-                        // Just close the socket, no success message or anything
-                        // Client immediatly stops receiving messages
-                        // TODO is this the right to do?
-                        socketDisconnected.close();
-                    }
-                    // If that was the only connection the user had,
-                    // the user is not online anymore
-                    if (userSockets.isEmpty()) {
-                        onlineSockets.remove(userID);
-                        userNotOnlineAnymore = true;
-                    }
-                }
-
-                if (userNotOnlineAnymore) {
-                    var gMessage = new UserOfflineMessage(userID);
-                    globalMessages.add(gMessage);
-                }
-
-
+                processConnectionAdded(conn);
+            } else if (event instanceof ConnectionRemovedEvent conn) {
+                processConnectionRemoved(conn);
             }
         }
 
@@ -161,11 +206,7 @@ public class EventQueue {
             if (userSockets != null) {
                 var socket = userSockets.get(message.userToken());
                 if (socket != null) {
-                    if (socket.ioTryAcquire()) {
-                        socket.outputStream().write(bytes);
-                        socket.ioRelease();
-                    }
-                    else {
+                    if (!socket.tryWrite(bytes)) {
                         messagesToRetry.add(message);
                     }
                 }
@@ -179,11 +220,7 @@ public class EventQueue {
             var bytes = prepareMessage(message);
             for (var socketMap : onlineSockets.values()) {
                 for (var socket : socketMap.values()) {
-                    if (socket.ioTryAcquire()) {
-                        socket.outputStream().write(bytes);
-                        socket.ioRelease();
-                    }
-                    else {
+                    if (!socket.tryWrite(bytes)) {
                         System.out.println("Couldn't acquire the socket, will retry later");
                         messagesToRetry.add(new MessageToRetry(socket.userID(), socket.userToken(), message));
                     }
@@ -215,11 +252,7 @@ public class EventQueue {
                     continue;
                 }
 
-                if (socket.ioTryAcquire()) {
-                    socket.outputStream().write(bytes);
-                    socket.ioRelease();
-                }
-                else {
+                if (!socket.tryWrite(bytes)) {
                     System.out.println("Couldn't acquire the socket, will retry later");
                     messagesToRetry.add(new MessageToRetry(socket.userID(), socket.userToken(), message));
                 }

@@ -1,6 +1,6 @@
 package eventqueue.messages;
 
-public class UserOfflineMessage extends EventMessage {
+public class UserOfflineMessage extends LiveMessage {
 
     private final long userID;
 

@@ -20,7 +20,10 @@ public class EndSession extends RequestHandler {
         if (session == null) {
             return responseFactory.err("internal", MsgCode.INTERNAL);
         }
+
+        // removeSession already enqueues a ConnectionRemovedEvent
         mgr.removeSession(session);
+
         return responseFactory.justOk();
     }
 }

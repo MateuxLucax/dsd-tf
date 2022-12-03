@@ -22,9 +22,9 @@ public class SharedContext {
 
         this.resFac = new ResponseFactory(gson);
 
-        this.mgr = new SessionManager();
-
         this.eventQueue = new EventQueue(this.gson);
+
+        this.mgr = new SessionManager(this.eventQueue);
     }
 
     public SessionManager sessionManager() {

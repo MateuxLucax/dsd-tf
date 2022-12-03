@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.Semaphore;
+
+// Maybe this should be just 'extends Socket'
 
 public class LiveSocket implements Closeable {
 
@@ -41,12 +44,50 @@ public class LiveSocket implements Closeable {
         sock.close();
     }
 
-    public InputStream inputStream() {
-        return this.sin;
+    public boolean isClosed() {
+        return sock.isClosed();
     }
 
-    public OutputStream outputStream() {
-        return this.sout;
+    public OutputStream out() {
+        return sout;
+    }
+
+    public InputStream in() {
+        return sin;
+    }
+
+    public static byte[] prepareMessage(String msg) {
+        var messageBytes = msg.getBytes();
+        var sizeBytes = Integer.toString(messageBytes.length).getBytes();
+
+        var buf = new byte[sizeBytes.length + 1 + messageBytes.length];
+        var off = 0;
+
+        for (var b : sizeBytes) buf[off++] = b;
+        buf[off++] = ' ';
+        for (var b : messageBytes) buf[off++] = b;
+
+        return buf;
+    }
+
+    public void writeMessage(String msg) throws IOException {
+        var prepared = prepareMessage(msg);
+        sout.write(prepared);
+    }
+
+    // Shortcut
+    public boolean tryWrite(byte[] b) throws IOException {
+        var ok = ioSema.tryAcquire();
+        debug("tryWrite " + (ok ? "ok" : "failed"));
+        if (ok) {
+            sout.write(b);
+            ioSema.release();
+        }
+        return ok;
+    }
+
+    public void setSoTimeout(int timeout) throws SocketException {
+        sock.setSoTimeout(timeout);
     }
 
     //
@@ -62,23 +103,12 @@ public class LiveSocket implements Closeable {
         System.out.println(pre + msg);
     }
 
-    public boolean ioTryAcquire() {
-        debug("trying to acquire");
-        var ok = ioSema.tryAcquire();
-        debug(ok ? "acquired successfully" : "failed to acquire");
-        return ok;
-    }
-
     public void ioAcquire() {
-        debug("acquiring");
         ioSema.acquireUninterruptibly();
-        debug("acquired");
     }
 
     public void ioRelease() {
-        debug("releasing");
         ioSema.release();
     }
-
 
 }

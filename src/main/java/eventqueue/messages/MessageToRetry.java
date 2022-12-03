@@ -7,11 +7,11 @@ public class MessageToRetry {
     private final String userToken;
 
     // message itself:
-    private final EventMessage message;
+    private final LiveMessage message;
 
     private int attemptsLeft = 5;
 
-    public MessageToRetry(long userID, String userToken, EventMessage message) {
+    public MessageToRetry(long userID, String userToken, LiveMessage message) {
         this.userID = userID;
         this.userToken = userToken;
         this.message = message;
@@ -19,7 +19,7 @@ public class MessageToRetry {
 
     public long userID() { return userID; }
     public String userToken() { return userToken; }
-    public EventMessage message() { return message; }
+    public LiveMessage message() { return message; }
 
     public int attemptsLeft() {
         return attemptsLeft;

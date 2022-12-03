@@ -2,7 +2,7 @@ package eventqueue.messages;
 
 import java.util.Collection;
 
-public class OnlineUserListMessage extends EventMessage {
+public class OnlineUserListMessage extends LiveMessage {
 
     private final Collection<Long> userIDs;
 

@@ -3,6 +3,7 @@ package infra;
 import eventqueue.EventLoop;
 import infra.session.SessionCleaner;
 import infra.session.SessionManager;
+import eventqueue.PingThread;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -26,13 +27,14 @@ public class Server {
 
             var sharedContext = new SharedContext();
 
-            var sessionCleaner = new SessionCleaner(
-                sharedContext.sessionManager(), SessionManager.THREAD_SLEEP.toMillis()
-            );
-            sessionCleaner.start();
+            new SessionCleaner(
+                sharedContext.sessionManager(),
+                SessionManager.THREAD_SLEEP.toMillis()
+            ).start();
 
-            var eventLoop = new EventLoop( sharedContext.eventQueue() );
-            eventLoop.start();
+            new EventLoop(sharedContext.eventQueue()).start();
+
+            new PingThread(sharedContext).start();
 
             while (true) {
                 // Don't auto-close the socket, some connections will be kept alive for listening to updates

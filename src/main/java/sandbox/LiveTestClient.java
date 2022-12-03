@@ -2,20 +2,24 @@ package sandbox;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 public class LiveTestClient {
 
     private static class ListenLiveSocket extends Thread {
 
+        // For testing
+        private static final boolean FAIL_PING = false;
+
         private String user;
-        private Socket socket;
         private InputStream in;
+        private OutputStream out;
 
         public ListenLiveSocket(String user, Socket socket) throws IOException {
             this.user = user;
-            this.socket = socket;
             this.in = socket.getInputStream();
+            this.out = socket.getOutputStream();
         }
 
         public void run() {
@@ -42,6 +46,11 @@ public class LiveTestClient {
                             var message = new String(buf, 0, size);
                             System.out.println("----- LIVE MESSAGE TO " + user + " -----\n" + message);
 
+                            var isPing = message.contains("\"type\": \"ping\"");
+                            if (isPing && !FAIL_PING) {
+                                out.write("pong".getBytes());
+                            }
+
                             readingSize = true;
                             off = 0;
                         }
@@ -62,13 +71,14 @@ public class LiveTestClient {
         var anotherAdminToken = "";
         var dudeToken = "";
 
-        var sleepBetween = 5000;
+        var sleepBetween = 2400;
+        //var sleepBetween = 0;
 
         {
-            var body = "{\"username\": \"admin\", \"fullname\": \"Administrator\", \"password\": \"abc\"}";
+            var body = "{\"username\": \"admin\", \"fullname\": \"Administrator\", \"password\": \"123456789\"}";
             TestClient.makeRequest("create-user", body, null);
 
-            adminToken = TestClient.loginGetToken("admin", "abc");
+            adminToken = TestClient.loginGetToken("admin", "123456789");
 
             var liveSocket = new Socket("localhost", 8080);
             TestClient.makeRequestWith(liveSocket, "go-online", "", adminToken, new String[]{});
@@ -92,10 +102,10 @@ public class LiveTestClient {
         Thread.sleep(sleepBetween/2);
 
         {
-            var body = "{\"username\": \"dude\", \"fullname\": \"some dude\", \"password\": \"password\"}";
+            var body = "{\"username\": \"dude\", \"fullname\": \"some dude\", \"password\": \"123\"}";
             TestClient.makeRequest("create-user", body, null);
 
-            dudeToken = TestClient.loginGetToken("dude", "password");
+            dudeToken = TestClient.loginGetToken("dude", "123");
 
             var liveSocket = new Socket("localhost", 8080);
             TestClient.makeRequestWith(liveSocket, "go-online", "", dudeToken, new String[]{});
@@ -108,7 +118,7 @@ public class LiveTestClient {
         Thread.sleep(sleepBetween/2);
 
         {
-            anotherAdminToken = TestClient.loginGetToken("admin", "abc");
+            anotherAdminToken = TestClient.loginGetToken("admin", "123456789");
             var liveSocket = new Socket("localhost", 8080);
             TestClient.makeRequestWith(liveSocket, "go-online", "", anotherAdminToken, new String[]{});
 
@@ -143,7 +153,7 @@ public class LiveTestClient {
         liveThread.start();
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         test1();
     }
 
