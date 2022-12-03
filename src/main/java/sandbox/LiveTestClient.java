@@ -56,7 +56,7 @@ public class LiveTestClient {
         }
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void test0() throws IOException, InterruptedException {
 
         var adminToken = "";
         var anotherAdminToken = "";
@@ -130,7 +130,21 @@ public class LiveTestClient {
         {
             TestClient.makeRequest("go-offline", "", anotherAdminToken);
         }
+    }
 
+    public static void test1() throws IOException {
+
+        var adminToken = TestClient.loginGetToken("admin", "123456789");
+
+        var liveSocket = new Socket("localhost", 8080);
+        TestClient.makeRequestWith(liveSocket, "go-online", "", adminToken, new String[]{});
+
+        var liveThread = new ListenLiveSocket("admin", liveSocket);
+        liveThread.start();
+    }
+
+    public static void main(String[] args) throws IOException {
+        test1();
     }
 
 }
