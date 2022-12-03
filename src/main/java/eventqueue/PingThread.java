@@ -26,6 +26,66 @@ public class PingThread extends Thread {
         this.gson = ctx.gson();
     }
 
+    public void pingSocket(LiveSocket socket) {
+
+        var id = socket.userID();
+        var token = socket.userToken();
+
+        System.out.println("PingThread: ping user " + id + " token " + token);
+
+        var repliedCorrectly = false;
+
+        try {
+
+            // The socket could've got closed before we copied the socket list
+            // but we stil have the old socket list, so we first have to check
+            if (socket.isClosed()) {
+                return;
+            }
+
+            socket.ioAcquire();
+            socket.setSoTimeout(TIMEOUT);
+
+            var json = gson.toJson(new PingMessage());
+            socket.writeMessage(json);
+            System.out.println("PingThread:   wrote " + json);
+
+            // Client needs to reply "pong" back
+
+            var expected = "pong".getBytes();
+            var idx = 0;
+
+            var in = socket.in();
+            var c = 0;
+
+            while (idx < expected.length && (c = in.read()) != -1) {
+                System.out.println("PingThread:   read " + (char) c);
+                var match = expected[idx] == (byte) c;
+                if (!match) break;
+                idx++;
+            }
+
+            if (idx == expected.length) {
+                repliedCorrectly = true;
+            }
+
+            socket.setSoTimeout(0);
+
+        } catch (IOException e) {
+            // IOException covers SocketException and SocketTimeoutException
+            repliedCorrectly = false;
+        } finally {
+            socket.ioRelease();
+        }
+
+        System.out.println("PingThread:   replied correctly? " + repliedCorrectly);
+
+        if (!repliedCorrectly) {
+            var event = new ConnectionRemovedEvent(id, token);
+            eventQueue.enqueue(event);
+        }
+    }
+
     public void run() {
         try {
             while (!isInterrupted()) {
@@ -35,70 +95,13 @@ public class PingThread extends Thread {
                 System.out.println("PingThread: running");
 
                 var sockets = eventQueue.copySockets();
-                for (var userEntry : sockets.entrySet()) {
-                    var id = userEntry.getKey();
-                    for (var tokenEntry : userEntry.getValue().entrySet()) {
-                        var token = tokenEntry.getKey();
-                        var socket = tokenEntry.getValue();
-
-                        System.out.println("PingThread: ping user " + id + " token " + token);
-
-                        var repliedCorrectly = false;
-
-                        try {
-
-                            // The socket could've got closed before we copied the socket list
-                            // but we stil have the old socket list, so we first have to check
-                            if (socket.isClosed()) {
-                                continue;
-                            }
-
-                            socket.ioAcquire();
-                            socket.setSoTimeout(TIMEOUT);
-
-                            var json = gson.toJson(new PingMessage());
-                            socket.writeMessage(json);
-                            System.out.println("PingThread:   wrote " + json);
-
-                            // Client needs to reply "pong" back
-
-                            var expected = "pong".getBytes();
-                            var idx = 0;
-
-                            var in = socket.in();
-                            var c = 0;
-
-                            while (idx < expected.length && (c = in.read()) != -1) {
-                                System.out.println("PingThread:   read " + (char) c);
-                                var match = expected[idx] == (byte) c;
-                                if (!match) break;
-                                idx++;
-                            }
-
-                            if (idx == expected.length) {
-                                repliedCorrectly = true;
-                            }
-
-                            socket.setSoTimeout(0);
-
-                        } catch (IOException e) {
-                            // IOException covers SocketException and SocketTimeoutException
-                            repliedCorrectly = false;
-                        } finally {
-                            socket.ioRelease();
-                        }
-
-                        System.out.println("PingThread:   replied correctly? " + repliedCorrectly);
-
-                        if (!repliedCorrectly) {
-                            var event = new ConnectionRemovedEvent(id, token);
-                            eventQueue.enqueue(event);
-                        }
+                for (var userSockets : sockets.values()) {
+                    for (var socket : userSockets.values()) {
+                        pingSocket(socket);
                     }
                 }
 
                 var endTime = System.currentTimeMillis();
-
                 var runTime = endTime - startTime;
 
                 Thread.sleep(Math.max(0, INTERVAL - runTime));
