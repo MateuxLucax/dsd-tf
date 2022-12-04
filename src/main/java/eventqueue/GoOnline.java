@@ -25,8 +25,6 @@ public class GoOnline extends RequestHandler {
     private LiveSocket createdLiveSocket = null;
 
     public Response run() {
-        System.out.println("GoOnline request handler running");
-
         try {
             var userID = getUserId();
             var token = getToken();

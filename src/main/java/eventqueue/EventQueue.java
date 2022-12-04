@@ -27,7 +27,6 @@ public class EventQueue {
     private final Queue<Event> eventsToRetry;
 
     private final Queue<LiveMessage> globalMessages;
-    private final Map<IdTokenPair, Queue<LiveMessage>> messagesPerConnection;
     private final Queue<MessageToRetry> messagesToRetry;
 
     public EventQueue(Gson gson) {
@@ -47,7 +46,6 @@ public class EventQueue {
         eventsToRetry = new ArrayDeque<>();
 
         globalMessages = new ArrayDeque<>();
-        messagesPerConnection = new HashMap<>();
         messagesToRetry = new ArrayDeque<>();
     }
 
@@ -91,12 +89,6 @@ public class EventQueue {
             var gMessage = new UserOnlineMessage(userID);
             globalMessages.add(gMessage);
         }
-
-        var onlineUsers = new ArrayList<>(onlineSockets.keySet());
-        var uMessage = new OnlineUserListMessage(onlineUsers);
-        messagesPerConnection
-            .computeIfAbsent(new IdTokenPair(userID, token), pair -> new ArrayDeque<>())
-            .add(uMessage);
 
         socketsSemaphore.release();
     }
@@ -159,6 +151,14 @@ public class EventQueue {
         }
         socketsSemaphore.release();
         return copy;
+    }
+
+    public Collection<Long> onlineUsers() {
+        var list = new ArrayList<Long>(onlineSockets.size());
+        socketsSemaphore.acquireUninterruptibly();
+        list.addAll(onlineSockets.keySet());
+        socketsSemaphore.release();
+        return list;
     }
 
     public void processEvents() throws IOException {
@@ -228,39 +228,6 @@ public class EventQueue {
                 }
             }
         }
-
-        for (var entry : messagesPerConnection.entrySet()) {
-
-            var idTokenPair = entry.getKey();
-            var messages = entry.getValue();
-
-            while (!messages.isEmpty()) {
-                var message = messages.remove();
-
-                var userID = idTokenPair.userID();
-                var token = idTokenPair.token();
-
-                System.out.println("Sending message " + message + " to " + userID + " on " + token);
-                var bytes = prepareMessage(message);
-
-                var userSockets = onlineSockets.get(userID);
-                if (userSockets == null) {
-                    continue;
-                }
-
-                var socket = userSockets.get(token);
-                if (socket == null) {
-                    continue;
-                }
-
-                if (!socket.tryWrite(bytes)) {
-                    System.out.println("Couldn't acquire the socket, will retry later");
-                    messagesToRetry.add(new MessageToRetry(socket.userID(), socket.userToken(), message));
-                }
-            }
-        }
-
-        messagesPerConnection.clear();
     }
 
 }

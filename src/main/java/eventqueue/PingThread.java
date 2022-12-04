@@ -31,8 +31,6 @@ public class PingThread extends Thread {
         var id = socket.userID();
         var token = socket.userToken();
 
-        System.out.println("PingThread: ping user " + id + " token " + token);
-
         var repliedCorrectly = false;
 
         try {
@@ -48,7 +46,6 @@ public class PingThread extends Thread {
 
             var json = gson.toJson(new PingMessage());
             socket.writeMessage(json);
-            System.out.println("PingThread:   wrote " + json);
 
             // Client needs to reply "pong" back
 
@@ -59,7 +56,6 @@ public class PingThread extends Thread {
             var c = 0;
 
             while (idx < expected.length && (c = in.read()) != -1) {
-                System.out.println("PingThread:   read " + (char) c);
                 var match = expected[idx] == (byte) c;
                 if (!match) break;
                 idx++;
@@ -78,7 +74,6 @@ public class PingThread extends Thread {
             socket.ioRelease();
         }
 
-        System.out.println("PingThread:   replied correctly? " + repliedCorrectly);
 
         if (!repliedCorrectly) {
             var event = new ConnectionRemovedEvent(id, token);
@@ -91,8 +86,6 @@ public class PingThread extends Thread {
             while (!isInterrupted()) {
 
                 var startTime = System.currentTimeMillis();
-
-                System.out.println("PingThread: running");
 
                 var sockets = eventQueue.copySockets();
                 for (var userSockets : sockets.values()) {

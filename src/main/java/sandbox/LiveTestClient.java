@@ -75,10 +75,10 @@ public class LiveTestClient {
         //var sleepBetween = 0;
 
         {
-            var body = "{\"username\": \"admin\", \"fullname\": \"Administrator\", \"password\": \"123456789\"}";
+            var body = "{\"username\": \"Admin\", \"fullname\": \"Administrator\", \"password\": \"123456789\"}";
             TestClient.makeRequest("create-user", body, null);
 
-            adminToken = TestClient.loginGetToken("admin", "123456789");
+            adminToken = TestClient.loginGetToken("Admin", "123456789");
 
             var liveSocket = new Socket("localhost", 8080);
             TestClient.makeRequestWith(liveSocket, "go-online", "", adminToken, new String[]{});
@@ -93,7 +93,7 @@ public class LiveTestClient {
             // message size) could be missing
 
 
-            var thread = new ListenLiveSocket("admin", liveSocket);
+            var thread = new ListenLiveSocket("Admin", liveSocket);
             thread.start();
         }
 
@@ -102,19 +102,19 @@ public class LiveTestClient {
         Thread.sleep(sleepBetween/2);
 
         {
-            var body = "{\"username\": \"dude\", \"fullname\": \"some dude\", \"password\": \"123\"}";
+            var body = "{\"username\": \"Dude\", \"fullname\": \"some dude\", \"password\": \"123\"}";
             TestClient.makeRequest("create-user", body, null);
 
-            dudeToken = TestClient.loginGetToken("dude", "123");
+            dudeToken = TestClient.loginGetToken("Dude", "123");
 
             var liveSocket = new Socket("localhost", 8080);
             TestClient.makeRequestWith(liveSocket, "go-online", "", dudeToken, new String[]{});
 
-            new ListenLiveSocket("dude", liveSocket).start();
+            new ListenLiveSocket("Dude", liveSocket).start();
         }
 
         Thread.sleep(sleepBetween/2);
-        System.out.println("Admin will login and go online on another device. 'dude' shouldn't get the user-logged-in message again");
+        System.out.println("Admin will login and go online on another device. 'Dude' shouldn't get the user-logged-in message again");
         Thread.sleep(sleepBetween/2);
 
         {
@@ -144,12 +144,15 @@ public class LiveTestClient {
 
     public static void test1() throws IOException {
 
-        var adminToken = TestClient.loginGetToken("admin", "123456789");
+        var body = "{\"username\": \"Admin\", \"fullname\": \"Administrator\", \"password\": \"123456789\"}";
+        TestClient.makeRequest("create-user", body, null);
+
+        var adminToken = TestClient.loginGetToken("Admin", "123456789");
 
         var liveSocket = new Socket("localhost", 8080);
         TestClient.makeRequestWith(liveSocket, "go-online", "", adminToken, new String[]{});
 
-        var liveThread = new ListenLiveSocket("admin", liveSocket);
+        var liveThread = new ListenLiveSocket("Admin", liveSocket);
         liveThread.start();
     }
 

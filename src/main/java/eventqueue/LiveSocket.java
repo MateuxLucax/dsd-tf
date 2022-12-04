@@ -94,7 +94,7 @@ public class LiveSocket implements Closeable {
     // Semaphore methods
     //
 
-    private final static boolean DEBUG = true;
+    private final static boolean DEBUG = false;
 
     private void debug(String msg) {
         if (!DEBUG) return;

@@ -1,5 +1,6 @@
 package infra.request;
 
+import eventqueue.GetOnlineUsers;
 import eventqueue.GoOffline;
 import eventqueue.GoOnline;
 import files.GetFile;
@@ -52,6 +53,8 @@ public class OperationLookup {
 
         map.put("go-online", GoOnline::new);
         map.put("go-offline", GoOffline::new);
+
+        map.put("online-users", GetOnlineUsers::new);
     }
 
     public static Collection<String> names() {
