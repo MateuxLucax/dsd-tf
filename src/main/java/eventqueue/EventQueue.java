@@ -1,6 +1,7 @@
 package eventqueue;
 
 import com.google.gson.Gson;
+import eventqueue.events.ChatMessageSentEvent;
 import eventqueue.events.ConnectionAddedEvent;
 import eventqueue.events.ConnectionRemovedEvent;
 import eventqueue.events.Event;
@@ -20,13 +21,14 @@ public class EventQueue {
     private final Semaphore socketsSemaphore;
     private final Map<Long, Map<String, LiveSocket>> onlineSockets;
 
-    // hoisted from processEvents() scope to instance scope for reusing the memory
-    // (constructed once, then reused along many processEvents() calls, instead of constructed again at each call)
+    // variables hoisted from processEvents() scope to instance scope for reusing the memory
+    // (constructed once, then reused along many processEvents() calls, instead of constructed again at each call, reducing memory allocations)
 
     private final Queue<Event> eventsToProcess;
     private final Queue<Event> eventsToRetry;
 
     private final Queue<LiveMessage> globalMessages;
+    private final Map<Long, Queue<LiveMessage>> messagesPerUser;
     private final Queue<MessageToRetry> messagesToRetry;
 
     public EventQueue(Gson gson) {
@@ -46,6 +48,7 @@ public class EventQueue {
         eventsToRetry = new ArrayDeque<>();
 
         globalMessages = new ArrayDeque<>();
+        messagesPerUser = new HashMap<>();
         messagesToRetry = new ArrayDeque<>();
     }
 
@@ -56,14 +59,14 @@ public class EventQueue {
         queueSemaphore.release();
     }
 
-    public byte[] prepareMessage(Object message) {
+    private byte[] prepareMessage(Object message) {
         return LiveSocket.prepareMessage(gson.toJson(message));
     }
 
     // TODO deal with the IOException when doing socket.outputStream().write(bytes) instead of propagating it up
     //  in all event process methods
 
-    public void processConnectionAdded(ConnectionAddedEvent event) {
+    private void processConnectionAdded(ConnectionAddedEvent event) {
         if (!socketsSemaphore.tryAcquire()) {
             eventsToRetry.add(event);
             return;
@@ -93,7 +96,7 @@ public class EventQueue {
         socketsSemaphore.release();
     }
 
-    public void processConnectionRemoved(ConnectionRemovedEvent event) throws IOException {
+    private void processConnectionRemoved(ConnectionRemovedEvent event) throws IOException {
         if (!socketsSemaphore.tryAcquire()) {
             eventsToRetry.add(event);
             return;
@@ -133,6 +136,13 @@ public class EventQueue {
         } else System.out.println("  still online");
 
         socketsSemaphore.release();
+    }
+
+    private void processChatMessageSent(ChatMessageSentEvent chat) {
+        var uMessage = ChatMessageReceivedMessage.from(chat);
+        messagesPerUser
+            .computeIfAbsent(chat.receiverID(), id -> new ArrayDeque<>())
+            .add(uMessage);
     }
 
     public Map<Long, Map<String, LiveSocket>> copySockets() {
@@ -185,6 +195,8 @@ public class EventQueue {
                 processConnectionAdded(conn);
             } else if (event instanceof ConnectionRemovedEvent conn) {
                 processConnectionRemoved(conn);
+            } else if (event instanceof ChatMessageSentEvent chat) {
+                processChatMessageSent(chat);
             }
         }
 
@@ -228,6 +240,24 @@ public class EventQueue {
                 }
             }
         }
+
+        for (var entry : messagesPerUser.entrySet()) {
+            var userID = entry.getKey();
+            var messages = entry.getValue();
+            if (messages == null) continue;
+            while (!messages.isEmpty()) {
+                var message = messages.remove();
+                var bytes = prepareMessage(message);
+                var sockets = onlineSockets.get(userID);
+                for (var socket : sockets.values()) {
+                    if (!socket.tryWrite(bytes)) {
+                        System.err.println("Couldn't acquire the socket, will retry later");
+                        messagesToRetry.add(new MessageToRetry(socket.userID(), socket.userToken(), message));
+                    }
+                }
+            }
+        }
+        messagesPerUser.clear();
     }
 
 }

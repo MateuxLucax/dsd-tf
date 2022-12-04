@@ -1,5 +1,6 @@
 package messages;
 
+import eventqueue.events.ChatMessageSentEvent;
 import infra.Database;
 import infra.SharedContext;
 import infra.request.*;
@@ -90,6 +91,9 @@ public class SendMessage extends RequestHandler {
             }
 
             connection.commit();
+
+            var event = new ChatMessageSentEvent(senderId, receiverId, data.textContents, data.fileReference, sentAt);
+            ctx.eventQueue().enqueue(event);
 
             var response = new ResponseData(messageId, sentAt.toString());
             return responseFactory.json(response);

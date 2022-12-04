@@ -156,8 +156,41 @@ public class LiveTestClient {
         liveThread.start();
     }
 
+    public static void test2() throws IOException, InterruptedException {
+        // expects these users to exist and to be friends
+
+        // ID 1
+        var adminToken = TestClient.loginGetToken("Admin", "123456789");
+        var adminSocket = new Socket("localhost", 8080);
+        TestClient.makeRequestWith(adminSocket, "go-online", "", adminToken, new String[]{});
+        new ListenLiveSocket("Admin", adminSocket).start();
+
+        // ID 2
+        var dudeToken  = TestClient.loginGetToken("Dude", "123");
+        var dudeSocket = new Socket("localhost", 8080);
+        TestClient.makeRequestWith(dudeSocket, "go-online", "", dudeToken, new String[]{});
+        new ListenLiveSocket("Dude", dudeSocket).start();
+
+        var sleep = 2500;
+
+        Thread.sleep(sleep);
+
+        {
+            var body = "{\"to\": 2, \"textContents\": \"hello\"}";
+            TestClient.makeRequest("send-message", body, adminToken);
+        }
+
+        Thread.sleep(sleep);
+
+        {
+            var body = "{\"to\": 1, \"textContents\": \"hello who are you\"}";
+            TestClient.makeRequest("send-message", body, dudeToken);
+        }
+    }
+
+
     public static void main(String[] args) throws IOException, InterruptedException {
-        test1();
+        test2();
     }
 
 }
