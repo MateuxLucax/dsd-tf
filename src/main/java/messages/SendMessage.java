@@ -92,7 +92,7 @@ public class SendMessage extends RequestHandler {
 
             connection.commit();
 
-            var event = new ChatMessageSentEvent(senderId, receiverId, data.textContents, data.fileReference, sentAt);
+            var event = new ChatMessageSentEvent(messageId, senderId, receiverId, data.textContents, data.fileReference, sentAt);
             ctx.eventQueue().enqueue(event);
 
             var response = new ResponseData(messageId, sentAt.toString());
