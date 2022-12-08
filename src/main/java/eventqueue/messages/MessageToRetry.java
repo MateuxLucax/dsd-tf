@@ -21,10 +21,6 @@ public class MessageToRetry {
     public String userToken() { return userToken; }
     public LiveMessage message() { return message; }
 
-    public int attemptsLeft() {
-        return attemptsLeft;
-    }
-
     public boolean attempt() {
         if (attemptsLeft == 0) return false;
         attemptsLeft--;

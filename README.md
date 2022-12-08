@@ -688,3 +688,86 @@ Qualquer operação, quando falhar, retorna um corpo semelhante a `{"messageCode
     </td>
   </tr>
 </table>
+
+### Requests para receber notificações do servidor
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>go-online</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Inicia uma conexão com o servidor por onde ele envia notificações de atualizações (usuário ficou online/offline, usuário enviou mensagem).Essa conexão é mantida pelo socket com que a request foi feita, que é mantido aberto.</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>Sem corpo</td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>Corpo vazio, mas eventualmente envia mensagens de notificação. Todas as mensagens são compostas pelo número de bytes no corpo e pelo corpo, em sequência, sem espaços no meio. O corpo vem em formato JSON. Sempre há um campo <code>type</code> descrevendo o tipo da mensagem. Os valores possíveis são <code>user-online</code>, <code>user-offline</code>, <code>chat-message-received</code> e <code>ping</code>. A mensagem de tipo <code>ping</code> serve para que o servidor detecte quando usuários ficam offline - se o cliente não responder com a string <code>pong</code> a tempo, o servidor desliga a conexão.</td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>Sem erros possívels</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>go-offline</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Fecha uma conexão de notificações com o servidor (conexão aberta previamente com go-online). A request não precisa ser enviada com o mesmo socket utilizado para enviar a go-online.</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>Sem corpo</td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>Sem corpo</td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>Sem erros possívels</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>Operação</th>
+    <td><code>get-online-users</code></td>
+  </tr>
+  <tr>
+    <th>Descrição</th>
+    <td>Recebe lista completa dos IDs dos usuários que atualmente estão online. Para que o cliente mantenha a lista de usuários atualmente online atualizadas, primeira envia essa request para receber uma lista inicial, e ao longo do tempo recebe notificações de usuários que ficaram online ou offline pela conexão aberta pela request de go-online.</td>
+  </tr>
+  <tr>
+    <th>Requer token?</th>
+    <td>Sim</td>
+  </tr>
+  <tr>
+    <th>Request</th>
+    <td>Sem corpo</td>
+  </tr>
+  <tr>
+    <th>Resposta ok</th>
+    <td>Array JSON de IDs dos usuários.</td>
+  </tr>
+  <tr>
+    <th>Possíveis erros</th>
+    <td>Sem erros possívels</td>
+  </tr>
+</table>

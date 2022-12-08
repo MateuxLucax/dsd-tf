@@ -26,7 +26,7 @@ public class PingThread extends Thread {
         this.gson = ctx.gson();
     }
 
-    public void pingSocket(LiveSocket socket) {
+    private void pingSocket(LiveSocket socket) {
 
         var id = socket.userID();
         var token = socket.userToken();
